@@ -37,10 +37,7 @@ export default function Navbar({ onOpenMobileMenu }) {
         </button>
 
         {/* Mobile brand */}
-        <div className="lg:hidden flex items-baseline gap-1.5">
-          <span className="text-base font-black tracking-tight" style={{ color: '#111111' }}>KUTUMB</span>
-          <span className="text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded" style={{ background: 'rgba(90,122,74,0.08)', color: '#5a7a4a', border: '1px solid rgba(90,122,74,0.18)' }}>OS</span>
-        </div>
+        <span className="text-base font-black tracking-tight" style={{ color: '#111111' }}>KUTUMB</span>
       </div>
 
       {/* Right: Ask + bell + user */}

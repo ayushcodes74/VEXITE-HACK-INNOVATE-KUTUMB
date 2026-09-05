@@ -55,15 +55,7 @@ export default function LoginPage() {
               <Leaf className="w-5 h-5" style={{ color: OLIVE }} strokeWidth={2.5} />
             </div>
             <div className="text-left">
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-2xl font-black tracking-tight" style={{ color: '#111111' }}>KUTUMB</span>
-                <span
-                  className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded"
-                  style={{ background: 'rgba(90,122,74,0.08)', color: OLIVE, border: '1px solid rgba(90,122,74,0.18)' }}
-                >
-                  OS
-                </span>
-              </div>
+              <span className="text-2xl font-black tracking-tight" style={{ color: '#111111' }}>KUTUMB</span>
               <p className="text-[11px] font-medium" style={{ color: '#888888' }}>Family Knowledge</p>
             </div>
           </div>

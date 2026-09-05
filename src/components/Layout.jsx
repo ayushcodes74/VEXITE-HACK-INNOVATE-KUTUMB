@@ -26,7 +26,7 @@ export default function Layout() {
             <div className="flex items-center gap-2">
               <span className="font-bold" style={{ color: '#555555' }}>KUTUMB</span>
               <span style={{ color: '#CCCCCC' }}>·</span>
-              <span>Family Knowledge OS</span>
+              <span>Family Knowledge</span>
             </div>
             <div className="flex items-center gap-3">
               <span>Powered by Gemini</span>

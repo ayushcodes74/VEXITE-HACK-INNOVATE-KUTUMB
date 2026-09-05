@@ -154,7 +154,7 @@ export default function DashboardPage() {
         <div className="space-y-4 max-w-2xl">
           <div className="section-label mx-auto mb-2">
             <Leaf className="w-3 h-3" />
-            <span>Family Knowledge OS</span>
+            <span>Family Knowledge</span>
           </div>
           <h1 className="heading-xl">
             Know what matters.<br />

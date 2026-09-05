@@ -69,123 +69,185 @@ export default function AskKutumbPage() {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
+  // Normalize a person name for matching: trim, lowercase
+  const norm = (s) => (s || '').trim().toLowerCase();
+
+  // Map common family aliases to actual member names from the knowledge model
+  const resolvePerson = (query) => {
+    const q = norm(query);
+    const members = familyKnowledge.people || [];
+    // Check alias maps first
+    if (q.includes('papa') || q.includes('father') || q.includes('dad')) {
+      // Try to find a male member, or fall back to first member with 'rajesh' in any known name
+      const match = members.find(m => norm(m.name).includes('rajesh'));
+      if (match) return match.name;
+    }
+    if (q.includes('mummy') || q.includes('mother') || q.includes('mom')) {
+      const match = members.find(m => norm(m.name).includes('sunita'));
+      if (match) return match.name;
+    }
+    // Direct name match against known members
+    for (const m of members) {
+      if (q.includes(norm(m.name)) || norm(m.name).includes(q.split(' ')[0] || '')) {
+        return m.name;
+      }
+    }
+    return null;
+  };
+
+  // Filter responsibilities by person name (case-insensitive, partial match)
+  const filterByPerson = (responsibilities, personName) => {
+    const target = norm(personName);
+    return responsibilities.filter(r => {
+      const rp = norm(r.person);
+      return rp === target || rp.includes(target) || target.includes(rp);
+    });
+  };
+
+  // Build a highlight card from a responsibility object
+  const toHighlight = (r) => ({
+    title: r.title,
+    person: r.person || 'Family',
+    date: r.due_date || 'Active',
+    amount: r.amount || 'N/A',
+    badge: r.priority === 'HIGH' ? 'Urgent' : r.priority === 'COMPLETED' ? 'Completed' : 'Upcoming',
+    color: r.priority === 'HIGH' ? 'rose' : r.priority === 'COMPLETED' ? 'emerald' : 'amber'
+  });
+
   const generateAnswer = (query) => {
     const lower = query.toLowerCase();
     const responsibilities = familyKnowledge.responsibilities || [];
 
     if (is_empty || responsibilities.length === 0) {
       return {
-        answer: "No documents have been analyzed in your family vault yet. Once you analyze documents like insurance policies or utility bills, I can answer questions about deadlines and owners.",
+        answer: "I don't have enough analyzed family documents yet. Upload relevant documents like insurance policies, utility bills, or loan statements in the Documents Vault, and I'll be able to answer your questions.",
         highlights: [],
-        recommendation: "Head over to the Documents Vault to analyze your records."
+        recommendation: "Head to the Documents Vault to upload or analyze demo documents."
       };
     }
 
     // 1. Most urgent
     if (lower.includes('urgent') || lower.includes('priority')) {
-      const urgentItems = responsibilities.filter((r) => r.priority === 'high');
-      const itemsToDisplay = urgentItems.length > 0 ? urgentItems : responsibilities.slice(0, 2);
+      const urgentItems = responsibilities.filter(r => r.priority === 'HIGH' && !r.isHandled);
+      const itemsToDisplay = urgentItems.length > 0 ? urgentItems : responsibilities.filter(r => !r.isHandled).slice(0, 2);
 
       return {
-        answer: `Found ${itemsToDisplay.length} high priority obligation(s) requiring immediate attention. Deadlines are calculated from current anchor date (5 Sep 2026).`,
-        highlights: itemsToDisplay.map((r) => ({
-          title: r.title,
-          person: r.assigned_to || 'Family Shared',
-          date: r.due_date || 'Urgent',
-          amount: r.amount || 'Variable',
-          badge: r.priority === 'high' ? 'High Attention' : 'Scheduled',
-          color: r.priority === 'high' ? 'rose' : 'amber'
-        })),
-        recommendation: itemsToDisplay[0]?.why_this_matters || "Pay before the due date to avoid service disruption or penalty fees."
+        answer: itemsToDisplay.length > 0
+          ? `Found ${itemsToDisplay.length} high priority obligation(s) requiring immediate attention:`
+          : `No high priority obligations right now. All items are either completed or not yet urgent.`,
+        highlights: itemsToDisplay.map(toHighlight),
+        recommendation: itemsToDisplay[0]?.why_this_matters || "All obligations are on track."
       };
     }
 
-    // 2. Papa / Father / Rajesh
-    if (lower.includes('papa') || lower.includes('rajesh') || lower.includes('father')) {
-      const fatherItems = responsibilities.filter((r) => {
-        const assigned = (r.assigned_to || '').toLowerCase();
-        const shared = (r.shared_with || []).join(' ').toLowerCase();
-        return assigned.includes('rajesh') || shared.includes('rajesh') || (r.description || '').toLowerCase().includes('rajesh');
-      });
+    // 2. Person-specific: Papa/Rajesh, Mummy/Sunita, or any known member
+    const personName = resolvePerson(lower);
+    if (personName) {
+      const personItems = filterByPerson(responsibilities, personName);
+      const activeItems = personItems.filter(r => !r.isHandled);
+      const displayName = familyKnowledge.people.find(p => norm(p.name) === norm(personName))?.name || personName;
 
+      if (personItems.length === 0) {
+        return {
+          answer: `${displayName} currently has no directly assigned responsibilities in the analyzed documents.`,
+          highlights: [],
+          recommendation: "Responsibilities are derived from analyzed documents. Upload more documents to expand the knowledge map."
+        };
+      }
+
+      const first = displayName.split(' ')[0];
       return {
-        answer: `Rajesh Sharma (Papa) is directly linked to ${fatherItems.length} key family responsibilities across your documents:`,
-        highlights: fatherItems.map((r) => ({
-          title: r.title,
-          person: r.assigned_to || 'Rajesh Sharma',
-          date: r.due_date || 'Active',
-          amount: r.amount || 'N/A',
-          badge: r.priority === 'high' ? 'Due Soon' : 'Active',
-          color: r.priority === 'high' ? 'rose' : 'amber'
-        })),
-        recommendation: "Rajesh is the primary policyholder for family health and power utilities."
+        answer: `${displayName} is currently responsible for ${activeItems.length > 0 ? activeItems.length : personItems.length} documented item(s):`,
+        highlights: (activeItems.length > 0 ? activeItems : personItems).map(toHighlight),
+        recommendation: personItems[0]?.why_this_matters || `${displayName}'s responsibilities are sourced from analyzed family documents.`
       };
     }
 
-    // 3. Mummy / Sunita / Mother
-    if (lower.includes('mummy') || lower.includes('sunita') || lower.includes('mother')) {
-      const motherItems = responsibilities.filter((r) => {
-        const assigned = (r.assigned_to || '').toLowerCase();
-        const shared = (r.shared_with || []).join(' ').toLowerCase();
-        return assigned.includes('sunita') || shared.includes('sunita') || (r.description || '').toLowerCase().includes('sunita');
+    // 3. Month / September / dues / bills
+    if (lower.includes('month') || lower.includes('september') || lower.includes('due') || lower.includes('bill') || lower.includes('payment') || lower.includes('renewal')) {
+      const sepItems = responsibilities.filter(r => {
+        const d = (r.due_date || '').toLowerCase();
+        return d.includes('sep') || d.includes('09-') || r.priority === 'HIGH';
       });
+      const display = sepItems.length > 0 ? sepItems : responsibilities.filter(r => !r.isHandled).slice(0, 3);
 
       return {
-        answer: `Sunita Sharma (Mummy) is associated with ${motherItems.length} family assets and responsibilities:`,
-        highlights: motherItems.map((r) => ({
-          title: r.title,
-          person: r.assigned_to || 'Sunita Sharma',
-          date: r.due_date || 'Active',
-          amount: r.amount || 'N/A',
-          badge: 'Joint / Primary',
+        answer: display.length > 0
+          ? `Here are the family dues and deadlines currently scheduled:`
+          : `No upcoming dues or deadlines found in the analyzed documents.`,
+        highlights: display.map(toHighlight),
+        recommendation: display[0]?.why_this_matters || "Review deadlines against your actual documents."
+      };
+    }
+
+    // 4. Recurring obligations
+    if (lower.includes('recurring') || lower.includes('repeat') || lower.includes('pattern')) {
+      const predictions = familyKnowledge.recurringPredictions || [];
+      if (predictions.length === 0) {
+        return {
+          answer: "No recurring patterns detected yet. Upload more documents and KUTUMB will identify recurring responsibilities.",
+          highlights: [],
+          recommendation: "Upload additional documents to enable pattern detection."
+        };
+      }
+      return {
+        answer: `KUTUMB has identified ${predictions.length} recurring obligation pattern(s) from your documents:`,
+        highlights: predictions.map(p => ({
+          title: p.title,
+          person: p.assignedPerson || 'Family',
+          date: p.nextExpectedFormatted || 'Recurring',
+          amount: p.amountLabel || p.lastAmount || 'N/A',
+          badge: `${p.frequencyLabel} pattern`,
           color: 'indigo'
         })),
-        recommendation: "Sunita is listed as a co-borrower / insured member across household accounts."
+        recommendation: predictions[0]?.reason || "These are pattern-based estimates from analyzed documents."
       };
     }
 
-    // 4. This month / September / dues
-    if (lower.includes('month') || lower.includes('september') || lower.includes('due') || lower.includes('bill')) {
-      const sepItems = responsibilities.filter((r) => {
-        const d = (r.due_date || '').toLowerCase();
-        return d.includes('sep') || d.includes('09-') || r.priority === 'high';
-      });
-      const display = sepItems.length > 0 ? sepItems : responsibilities.slice(0, 3);
-
+    // 5. What is [person] responsible for
+    if (lower.includes('responsible') || lower.includes('handle')) {
+      const who = resolvePerson(lower);
+      if (who) {
+        const items = filterByPerson(responsibilities, who).filter(r => !r.isHandled);
+        const displayName = familyKnowledge.people.find(p => norm(p.name) === norm(who))?.name || who;
+        if (items.length === 0) {
+          return {
+            answer: `${displayName} currently has no directly assigned active responsibilities in the analyzed documents.`,
+            highlights: [],
+            recommendation: "Responsibilities are derived from analyzed documents."
+          };
+        }
+        return {
+          answer: `${displayName} is responsible for ${items.length} active obligation(s):`,
+          highlights: items.map(toHighlight),
+          recommendation: items[0]?.why_this_matters || "Sourced from analyzed family documents."
+        };
+      }
+      // No specific person matched — show all unhandled
+      const allActive = responsibilities.filter(r => !r.isHandled);
       return {
-        answer: `Here are the family dues and deadlines scheduled for September 2026:`,
-        highlights: display.map((r) => ({
-          title: r.title,
-          person: r.assigned_to || 'Family',
-          date: r.due_date || 'Sep 2026',
-          amount: r.amount || 'N/A',
-          badge: r.priority === 'high' ? 'Urgent' : 'Upcoming',
-          color: r.priority === 'high' ? 'rose' : 'amber'
-        })),
-        recommendation: "Ensure health insurance renewal is completed prior to the 18 Sep expiry date."
+        answer: `The family currently has ${allActive.length} active obligation(s) across all members:`,
+        highlights: allActive.map(toHighlight),
+        recommendation: "Ask about a specific family member for targeted results."
       };
     }
 
-    // Default search across responsibilities
-    const matched = responsibilities.filter((r) => 
-      r.title.toLowerCase().includes(lower) || 
-      (r.description || '').toLowerCase().includes(lower) ||
-      (r.category || '').toLowerCase().includes(lower)
+    // 6. Default search across responsibilities
+    const matched = responsibilities.filter(r =>
+      (r.title || '').toLowerCase().includes(lower) ||
+      (r.action || '').toLowerCase().includes(lower) ||
+      (r.category || '').toLowerCase().includes(lower) ||
+      (r.person || '').toLowerCase().includes(lower)
     );
 
-    const items = matched.length > 0 ? matched : responsibilities.slice(0, 2);
+    const items = matched.length > 0 ? matched : responsibilities.filter(r => !r.isHandled).slice(0, 3);
 
     return {
-      answer: `Searched family vault for "${query}". Found ${items.length} relevant obligation(s):`,
-      highlights: items.map((r) => ({
-        title: r.title,
-        person: r.assigned_to || 'Family Member',
-        date: r.due_date || 'Scheduled',
-        amount: r.amount || 'N/A',
-        badge: r.priority,
-        color: r.priority === 'high' ? 'rose' : 'indigo'
-      })),
-      recommendation: items[0]?.why_this_matters || "Try clicking any of the preset questions above for instant insights."
+      answer: items.length > 0
+        ? `Found ${items.length} relevant obligation(s) for "${query}":`
+        : `No specific matches found for "${query}". Here are the most recent obligations:`,
+      highlights: items.map(toHighlight),
+      recommendation: items[0]?.why_this_matters || "Try asking about a specific person or responsibility type."
     };
   };
 

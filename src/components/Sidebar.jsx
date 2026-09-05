@@ -93,15 +93,7 @@ export default function Sidebar({ isOpen, onClose }) {
               <Leaf className="w-4.5 h-4.5" style={{ color: '#5a7a4a' }} strokeWidth={2.5} />
             </div>
             <div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-lg font-black tracking-tight" style={{ color: '#111111' }}>KUTUMB</span>
-                <span
-                  className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded"
-                  style={{ background: 'rgba(90,122,74,0.08)', color: '#5a7a4a', border: '1px solid rgba(90,122,74,0.18)' }}
-                >
-                  OS
-                </span>
-              </div>
+              <span className="text-lg font-black tracking-tight" style={{ color: '#111111' }}>KUTUMB</span>
               <p className="text-[10px] font-medium mt-0.5" style={{ color: '#888888' }}>Family Knowledge</p>
             </div>
           </NavLink>
