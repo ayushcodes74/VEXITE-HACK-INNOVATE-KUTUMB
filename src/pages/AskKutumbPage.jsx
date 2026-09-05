@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { 
   Sparkles, 
   Send, 
@@ -9,37 +9,63 @@ import {
   CreditCard, 
   ShieldAlert, 
   CheckCircle2, 
-  Info,
-  RotateCcw,
-  Zap,
-  HelpCircle
+  Info, 
+  RotateCcw, 
+  Zap, 
+  HelpCircle 
 } from 'lucide-react';
-import { askKutumbPresetResponses, familyInfo } from '../data/mockData';
+import { useFamilyKnowledge } from '../context/FamilyContext';
 import Badge from '../components/Badge';
 
 export default function AskKutumbPage() {
-  const initialMessages = [
-    {
+  const { familyKnowledge, is_empty } = useFamilyKnowledge();
+
+  const welcomeMessage = useMemo(() => {
+    if (is_empty || familyKnowledge.people.length === 0) {
+      return {
+        id: 'welcome',
+        sender: 'kutumb',
+        text: `Namaste! I am KUTUMB, your Family Intelligence Assistant. 
+
+Your family vault currently has no analyzed documents. Upload bills, policies, or receipts in Documents Vault to begin indexing family responsibilities.`,
+        highlights: null,
+        recommendation: "Go to Documents Vault to upload or analyze demo documents.",
+        timestamp: 'Just now'
+      };
+    }
+
+    const memberNames = familyKnowledge.people.map((p) => p.name.split(' ')[0]).join(', ');
+    return {
       id: 'welcome',
       sender: 'kutumb',
-      text: `Namaste! I am KUTUMB, your Sharma Family Intelligence Assistant. 
+      text: `Namaste! I am KUTUMB, your ${familyKnowledge.familyName || 'Family'} Intelligence Assistant. 
 
 I have indexed your family knowledge map:
-• 4 Family Members (Rajesh, Sunita, Aarav, Ananya)
-• 6 Verified Documents & Policies
-• September 2026 Obligations & Deadlines
+• ${familyKnowledge.people.length} Family Members (${memberNames})
+• ${familyKnowledge.documents.length} Verified Documents & Records
+• ${familyKnowledge.responsibilities.length} Active Obligations & Deadlines
 
 Click any preset question below or ask me about policies, ownership, and dues!`,
       highlights: null,
       recommendation: null,
       timestamp: 'Just now'
-    }
-  ];
+    };
+  }, [familyKnowledge, is_empty]);
 
-  const [messages, setMessages] = useState(initialMessages);
+  const [messages, setMessages] = useState([welcomeMessage]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const chatBottomRef = useRef(null);
+
+  // Sync welcome message if familyKnowledge changes and only 1 message exists
+  useEffect(() => {
+    setMessages((prev) => {
+      if (prev.length <= 1) {
+        return [welcomeMessage];
+      }
+      return prev;
+    });
+  }, [welcomeMessage]);
 
   const presetQuestions = [
     { id: 'preset-1', label: 'What needs attention this month?' },
@@ -53,8 +79,127 @@ Click any preset question below or ask me about policies, ownership, and dues!`,
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
+  const generateAnswer = (query) => {
+    const lower = query.toLowerCase();
+    const responsibilities = familyKnowledge.responsibilities || [];
+
+    if (is_empty || responsibilities.length === 0) {
+      return {
+        answer: "No documents have been analyzed in your family vault yet. Once you analyze documents like insurance policies or utility bills, I can answer questions about deadlines and owners.",
+        highlights: [],
+        recommendation: "Head over to the Documents Vault to analyze your records."
+      };
+    }
+
+    // 1. Most urgent
+    if (lower.includes('urgent') || lower.includes('priority')) {
+      const urgentItems = responsibilities.filter((r) => r.priority === 'high');
+      const itemsToDisplay = urgentItems.length > 0 ? urgentItems : responsibilities.slice(0, 2);
+
+      return {
+        answer: `Found ${itemsToDisplay.length} high priority obligation(s) requiring immediate attention. Deadlines are calculated from current anchor date (5 Sep 2026).`,
+        highlights: itemsToDisplay.map((r) => ({
+          title: r.title,
+          person: r.assigned_to || 'Family Shared',
+          date: r.due_date || 'Urgent',
+          amount: r.amount || 'Variable',
+          badge: r.priority === 'high' ? 'High Attention' : 'Scheduled',
+          color: r.priority === 'high' ? 'rose' : 'amber'
+        })),
+        recommendation: itemsToDisplay[0]?.why_this_matters || "Pay before the due date to avoid service disruption or penalty fees."
+      };
+    }
+
+    // 2. Papa / Father / Rajesh
+    if (lower.includes('papa') || lower.includes('rajesh') || lower.includes('father')) {
+      const fatherItems = responsibilities.filter((r) => {
+        const assigned = (r.assigned_to || '').toLowerCase();
+        const shared = (r.shared_with || []).join(' ').toLowerCase();
+        return assigned.includes('rajesh') || shared.includes('rajesh') || (r.description || '').toLowerCase().includes('rajesh');
+      });
+
+      return {
+        answer: `Rajesh Sharma (Papa) is directly linked to ${fatherItems.length} key family responsibilities across your documents:`,
+        highlights: fatherItems.map((r) => ({
+          title: r.title,
+          person: r.assigned_to || 'Rajesh Sharma',
+          date: r.due_date || 'Active',
+          amount: r.amount || 'N/A',
+          badge: r.priority === 'high' ? 'Due Soon' : 'Active',
+          color: r.priority === 'high' ? 'rose' : 'amber'
+        })),
+        recommendation: "Rajesh is the primary policyholder for family health and power utilities."
+      };
+    }
+
+    // 3. Mummy / Sunita / Mother
+    if (lower.includes('mummy') || lower.includes('sunita') || lower.includes('mother')) {
+      const motherItems = responsibilities.filter((r) => {
+        const assigned = (r.assigned_to || '').toLowerCase();
+        const shared = (r.shared_with || []).join(' ').toLowerCase();
+        return assigned.includes('sunita') || shared.includes('sunita') || (r.description || '').toLowerCase().includes('sunita');
+      });
+
+      return {
+        answer: `Sunita Sharma (Mummy) is associated with ${motherItems.length} family assets and responsibilities:`,
+        highlights: motherItems.map((r) => ({
+          title: r.title,
+          person: r.assigned_to || 'Sunita Sharma',
+          date: r.due_date || 'Active',
+          amount: r.amount || 'N/A',
+          badge: 'Joint / Primary',
+          color: 'indigo'
+        })),
+        recommendation: "Sunita is listed as a co-borrower / insured member across household accounts."
+      };
+    }
+
+    // 4. This month / September / dues
+    if (lower.includes('month') || lower.includes('september') || lower.includes('due') || lower.includes('bill')) {
+      const sepItems = responsibilities.filter((r) => {
+        const d = (r.due_date || '').toLowerCase();
+        return d.includes('sep') || d.includes('09-') || r.priority === 'high';
+      });
+      const display = sepItems.length > 0 ? sepItems : responsibilities.slice(0, 3);
+
+      return {
+        answer: `Here are the family dues and deadlines scheduled for September 2026:`,
+        highlights: display.map((r) => ({
+          title: r.title,
+          person: r.assigned_to || 'Family',
+          date: r.due_date || 'Sep 2026',
+          amount: r.amount || 'N/A',
+          badge: r.priority === 'high' ? 'Urgent' : 'Upcoming',
+          color: r.priority === 'high' ? 'rose' : 'amber'
+        })),
+        recommendation: "Ensure health insurance renewal is completed prior to the 18 Sep expiry date."
+      };
+    }
+
+    // Default search across responsibilities
+    const matched = responsibilities.filter((r) => 
+      r.title.toLowerCase().includes(lower) || 
+      (r.description || '').toLowerCase().includes(lower) ||
+      (r.category || '').toLowerCase().includes(lower)
+    );
+
+    const items = matched.length > 0 ? matched : responsibilities.slice(0, 2);
+
+    return {
+      answer: `Searched family vault for "${query}". Found ${items.length} relevant obligation(s):`,
+      highlights: items.map((r) => ({
+        title: r.title,
+        person: r.assigned_to || 'Family Member',
+        date: r.due_date || 'Scheduled',
+        amount: r.amount || 'N/A',
+        badge: r.priority,
+        color: r.priority === 'high' ? 'rose' : 'indigo'
+      })),
+      recommendation: items[0]?.why_this_matters || "Try clicking any of the preset questions above for instant insights."
+    };
+  };
+
   const handleSelectPreset = (presetId, label) => {
-    // Add user message
     const userMsg = {
       id: `user-${Date.now()}`,
       sender: 'user',
@@ -65,25 +210,21 @@ Click any preset question below or ask me about policies, ownership, and dues!`,
     setMessages((prev) => [...prev, userMsg]);
     setIsTyping(true);
 
-    // Find predefined response from mockData
-    const found = askKutumbPresetResponses.find((p) => p.id === presetId);
-
     setTimeout(() => {
       setIsTyping(false);
-      if (found) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `kutumb-${Date.now()}`,
-            sender: 'kutumb',
-            text: found.answer,
-            highlights: found.highlights,
-            recommendation: found.recommendation,
-            timestamp: 'Just now'
-          }
-        ]);
-      }
-    }, 450);
+      const res = generateAnswer(label);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `kutumb-${Date.now()}`,
+          sender: 'kutumb',
+          text: res.answer,
+          highlights: res.highlights,
+          recommendation: res.recommendation,
+          timestamp: 'Just now'
+        }
+      ]);
+    }, 400);
   };
 
   const handleSendMessage = (e) => {
@@ -103,69 +244,25 @@ Click any preset question below or ask me about policies, ownership, and dues!`,
     setMessages((prev) => [...prev, userMsg]);
     setIsTyping(true);
 
-    // Match with preset if similar, otherwise give high-quality demo response
-    const lower = query.toLowerCase();
-    let matched = null;
-
-    if (lower.includes('urgent') || lower.includes('priority')) {
-      matched = askKutumbPresetResponses.find((p) => p.id === 'preset-4');
-    } else if (lower.includes('papa') || lower.includes('rajesh') || lower.includes('father')) {
-      matched = askKutumbPresetResponses.find((p) => p.id === 'preset-2');
-    } else if (lower.includes('mummy') || lower.includes('sunita') || lower.includes('mother')) {
-      matched = askKutumbPresetResponses.find((p) => p.id === 'preset-3');
-    } else if (lower.includes('month') || lower.includes('september') || lower.includes('attention') || lower.includes('bill')) {
-      matched = askKutumbPresetResponses.find((p) => p.id === 'preset-1');
-    }
-
     setTimeout(() => {
       setIsTyping(false);
-      if (matched) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `kutumb-${Date.now()}`,
-            sender: 'kutumb',
-            text: matched.answer,
-            highlights: matched.highlights,
-            recommendation: matched.recommendation,
-            timestamp: 'Just now'
-          }
-        ]);
-      } else {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `kutumb-${Date.now()}`,
-            sender: 'kutumb',
-            text: `I searched the Sharma Family vault for "${query}". In this foundation milestone, responses are mapped to synthetic family records. Full live LLM parsing with Gemini will be connected in Milestone 2.`,
-            highlights: [
-              {
-                title: "Health Insurance Renewal (Highest Priority)",
-                person: "Rajesh Sharma",
-                date: "18 Sep 2026",
-                amount: "₹28,450",
-                badge: "Action Required",
-                color: "rose"
-              },
-              {
-                title: "Home Loan EMI (Joint Liability)",
-                person: "Rajesh + Sunita",
-                date: "25 Sep 2026",
-                amount: "₹46,800",
-                badge: "Active",
-                color: "indigo"
-              }
-            ],
-            recommendation: "Try clicking any of the preset question chips above to see detailed answers!",
-            timestamp: 'Just now'
-          }
-        ]);
-      }
-    }, 500);
+      const res = generateAnswer(query);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `kutumb-${Date.now()}`,
+          sender: 'kutumb',
+          text: res.answer,
+          highlights: res.highlights,
+          recommendation: res.recommendation,
+          timestamp: 'Just now'
+        }
+      ]);
+    }, 450);
   };
 
   const handleResetChat = () => {
-    setMessages(initialMessages);
+    setMessages([welcomeMessage]);
   };
 
   return (
@@ -199,27 +296,30 @@ Click any preset question below or ask me about policies, ownership, and dues!`,
       </div>
 
       {/* Preset Question Chips */}
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
           <Zap className="w-3 h-3 text-amber-400" />
-          Preset Questions (Click to test):
+          Quick Questions
         </span>
-        <div className="flex flex-wrap gap-2">
-          {presetQuestions.map((q) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {presetQuestions.map((q, idx) => (
             <button
               key={q.id}
               onClick={() => handleSelectPreset(q.id, q.label)}
-              className="px-3.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-amber-300 border border-slate-800 hover:border-amber-500/40 text-xs font-medium transition-all shadow-sm flex items-center gap-1.5 group cursor-pointer"
+              className="group flex items-center gap-3 px-4 py-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800/90 text-slate-300 hover:text-white border border-slate-800 hover:border-amber-500/40 text-xs font-medium transition-all text-left focus-ring cursor-pointer"
             >
-              <span>{q.label}</span>
-              <ArrowRight className="w-3 h-3 text-slate-500 group-hover:text-amber-400 transition-transform group-hover:translate-x-0.5" />
+              <span className="w-5 h-5 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-[10px] font-bold shrink-0">
+                {idx + 1}
+              </span>
+              <span className="flex-1 leading-snug">{q.label}</span>
+              <ArrowRight className="w-3 h-3 text-slate-600 group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all shrink-0" />
             </button>
           ))}
         </div>
       </div>
 
       {/* Messages Stream Container */}
-      <div className="flex-1 overflow-y-auto pr-2 space-y-4 rounded-2xl bg-slate-900/30 border border-slate-800/70 p-4 sm:p-6">
+      <div className="flex-1 overflow-y-auto pr-1 space-y-5 rounded-2xl bg-slate-950/60 border border-slate-800/60 p-4 sm:p-5" style={{ borderTop: '2px solid rgba(245,158,11,0.15)' }}>
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -246,15 +346,15 @@ Click any preset question below or ask me about policies, ownership, and dues!`,
 
               {/* Rich response cards for KUTUMB answers */}
               {msg.highlights && msg.highlights.length > 0 && (
-                <div className="space-y-2 pt-2 border-t border-slate-800/80">
+                <div className="space-y-1.5 pt-2 border-t border-slate-800/60">
                   {msg.highlights.map((item, idx) => (
                     <div
                       key={idx}
-                      className="p-3 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-1.5 text-xs"
+                      className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 text-xs animate-fadeIn"
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-bold text-white text-xs">{item.title}</span>
-                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="font-bold text-white text-xs leading-snug flex-1">{item.title}</span>
+                        <span className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold ${
                           item.color === 'rose'
                             ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
                             : item.color === 'amber'
@@ -265,12 +365,19 @@ Click any preset question below or ask me about policies, ownership, and dues!`,
                         </span>
                       </div>
 
-                      <div className="flex flex-wrap items-center justify-between gap-2 text-slate-400 text-[11px]">
-                        <span>{item.person}</span>
-                        <div className="flex items-center gap-3">
-                          <span className="text-slate-300">{item.date}</span>
-                          <span className="font-bold text-amber-300">{item.amount}</span>
-                        </div>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]">
+                        <span className="text-slate-400">{item.person}</span>
+                        <span className="text-slate-600">·</span>
+                        <span className="text-slate-300 flex items-center gap-1">
+                          <Calendar className="w-3 h-3 text-slate-500" />
+                          {item.date}
+                        </span>
+                        {item.amount && item.amount !== 'N/A' && (
+                          <>
+                            <span className="text-slate-600">·</span>
+                            <span className="font-bold text-amber-300">{item.amount}</span>
+                          </>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -323,15 +430,14 @@ Click any preset question below or ask me about policies, ownership, and dues!`,
           type="text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          placeholder="Ask a question (e.g. 'What is due next?', 'Show insurance details')..."
-          className="flex-1 bg-slate-900/80 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500/60 focus:ring-2 focus:ring-amber-500/10 shadow-inner"
+          placeholder="Ask about policies, dues, owners… (e.g. 'What is due next month?')"
+          className="flex-1 bg-slate-900/80 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 transition-all shadow-inner"
         />
         <button
           type="submit"
           disabled={!inputText.trim()}
-          className="px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold text-sm shadow-md shadow-amber-500/20 hover:brightness-110 active:scale-95 disabled:opacity-40 disabled:hover:brightness-100 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+          className="px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold text-sm shadow-md shadow-amber-500/20 hover:brightness-110 active:scale-95 disabled:opacity-40 disabled:hover:brightness-100 disabled:cursor-not-allowed transition-all flex items-center gap-2 focus-ring"
         >
-          <span>Send</span>
           <Send className="w-4 h-4 stroke-[2.5]" />
         </button>
       </form>

@@ -24,21 +24,24 @@ import {
   RefreshCw,
   FolderOpen,
   Info,
-  ShieldAlert
+  ShieldAlert,
+  Trash2,
+  Check
 } from 'lucide-react';
-import { syntheticDocuments, familyInfo } from '../data/mockData';
+import { useFamilyKnowledge } from '../context/FamilyContext';
 import { analyzeDocument, analyzeDemoDocument, checkBackendHealth } from '../services/api';
 import Badge from '../components/Badge';
 
 export default function DocumentsPage() {
-  // Existing synthetic documents list for fallback / browsing
-  const [documents, setDocuments] = useState(syntheticDocuments);
-  
-  // Stored array of Gemini analyzed document results (Milestone 2 multi-document foundation)
-  const [analyzedDocuments, setAnalyzedDocuments] = useState([]);
-  const [currentAnalysis, setCurrentAnalysis] = useState(null);
+  const { 
+    analyzedDocuments, 
+    addAnalyzedDocument, 
+    removeAnalyzedDocument, 
+    clearAllAnalyzedDocuments,
+    familyKnowledge 
+  } = useFamilyKnowledge();
 
-  // File selection & upload state
+  const [currentAnalysis, setCurrentAnalysis] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -51,9 +54,7 @@ export default function DocumentsPage() {
   // Filtering state
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [selectedMember, setSelectedMember] = useState('All');
   const [selectedDocModal, setSelectedDocModal] = useState(null);
-  const [forceEmptyState, setForceEmptyState] = useState(false);
 
   // Categories
   const categories = ['All', 'Insurance', 'Utilities', 'Loans', 'Taxes', 'Vehicles'];
@@ -79,11 +80,9 @@ export default function DocumentsPage() {
   const handleFileSelect = (file) => {
     if (!file) return;
 
-    // Clear previous analysis to prevent state leakage
     setCurrentAnalysis(null);
     setAnalysisError(null);
 
-    // Validate format
     const validExtensions = ['pdf', 'png', 'jpg', 'jpeg', 'webp', 'txt'];
     const ext = file.name.split('.').pop()?.toLowerCase();
 
@@ -125,65 +124,33 @@ export default function DocumentsPage() {
   const handleAnalyzeWithGemini = async () => {
     if (!selectedFile) return;
 
-    // Reset current analysis and error states
     setCurrentAnalysis(null);
     setAnalysisError(null);
     setIsAnalyzing(true);
 
     try {
-      // Stage 1: Uploading
       setAnalysisStage('Uploading document to analysis pipeline...');
-      await new Promise(r => setTimeout(r, 350));
+      await new Promise(r => setTimeout(r, 300));
 
-      // Stage 2: Gemini Multimodal Analysis
       setAnalysisStage('Analyzing document with Gemini Multimodal API...');
       
-      // Call API
       const result = await analyzeDocument(selectedFile);
       const structuredData = result.data;
 
-      // Stage 3: Context Understanding
       setAnalysisStage('Extracting entities & responsibilities...');
       await new Promise(r => setTimeout(r, 200));
 
-      // Stage 4: Complete
       setAnalysisStage('Analysis complete!');
 
-      // Set current analysis to the real structured data from Gemini
+      // Set current analysis view
       setCurrentAnalysis(structuredData);
-      setAnalyzedDocuments(prev => [structuredData, ...prev.filter(d => d.document?.source_file !== structuredData.document?.source_file)]);
 
-      // Only add to catalog if the document is genuinely family relevant
-      if (structuredData.relevance?.is_relevant !== false) {
-        const primaryPerson = structuredData.people?.[0]?.name || 'Family Document';
-        const newDocEntry = {
-          id: `gemini-${Date.now()}`,
-          name: structuredData.document?.title || selectedFile.name,
-          fileName: structuredData.document?.source_file || selectedFile.name,
-          category: structuredData.document?.type?.includes('Insurance') ? 'Insurance' : 
-                    structuredData.document?.type?.includes('Bill') ? 'Utilities' : 
-                    structuredData.document?.type?.includes('Loan') ? 'Loans' : 'General',
-          type: structuredData.document?.type || 'Extracted Document',
-          size: `${(selectedFile.size / (1024 * 1024)).toFixed(1)} MB`,
-          uploadedDate: 'Just now',
-          dueDate: structuredData.dates?.[0]?.date || 'Extracted',
-          assignedMember: primaryPerson,
-          memberId: primaryPerson.toLowerCase().includes('rajesh') ? 'rajesh' : 
-                    primaryPerson.toLowerCase().includes('sunita') ? 'sunita' : 'both',
-          status: 'Gemini Verified',
-          statusType: structuredData.warnings?.length > 0 ? 'warning' : 'success',
-          policyNo: structuredData.entities?.[0]?.name || selectedFile.name,
-          coverage: structuredData.financial?.amount ? `₹${structuredData.financial.amount.toLocaleString('en-IN')}` : 'Extracted',
-          description: `Extracted via Gemini (${(structuredData.confidence * 100).toFixed(0)}% confidence). ${structuredData.responsibilities?.[0]?.action || 'Document mapped.'}`
-        };
-
-        setDocuments(prev => [newDocEntry, ...prev]);
-      }
+      // Add to global multi-document family knowledge state
+      addAnalyzedDocument(structuredData, selectedFile.name, selectedFile.size);
 
       setSelectedFile(null);
     } catch (err) {
       console.error('[Gemini Analysis Failed]:', err);
-      // Strictly show error - NEVER FALL BACK TO MOCK DATA
       setCurrentAnalysis(null);
       setAnalysisError(err.message || 'KUTUMB could not analyze this document.');
     } finally {
@@ -207,7 +174,7 @@ export default function DocumentsPage() {
       await new Promise(r => setTimeout(r, 200));
 
       setCurrentAnalysis(structuredData);
-      setAnalyzedDocuments(prev => [structuredData, ...prev.filter(d => d.document?.source_file !== structuredData.document?.source_file)]);
+      addAnalyzedDocument(structuredData, structuredData.document?.source_file || `${demoId}.pdf`, 1024);
     } catch (err) {
       console.error('[Demo Analysis Failed]:', err);
       setCurrentAnalysis(null);
@@ -218,48 +185,64 @@ export default function DocumentsPage() {
     }
   };
 
-  // Filtered documents
-  const filteredDocuments = forceEmptyState
-    ? []
-    : documents.filter((doc) => {
-        const matchesSearch =
-          doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          doc.policyNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          doc.assignedMember.toLowerCase().includes(searchQuery.toLowerCase());
+  // Filtered documents list from application state
+  const filteredDocuments = analyzedDocuments.filter((doc) => {
+    const analysis = doc.analysis || {};
+    const title = analysis.document?.title || doc.originalFileName || '';
+    const source = analysis.document?.source_file || doc.originalFileName || '';
+    const type = analysis.document?.type || '';
 
-        const matchesCategory =
-          selectedCategory === 'All' || doc.category === selectedCategory;
+    const matchesSearch =
+      title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      source.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      type.toLowerCase().includes(searchQuery.toLowerCase());
 
-        const matchesMember =
-          selectedMember === 'All' ||
-          doc.assignedMember.toLowerCase().includes(selectedMember.toLowerCase());
+    const matchesCategory =
+      selectedCategory === 'All' ||
+      type.toLowerCase().includes(selectedCategory.toLowerCase());
 
-        return matchesSearch && matchesCategory && matchesMember;
-      });
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <div className="space-y-8 pb-14">
-      {/* Page Header with Engine Status Badge */}
+      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-400 mb-1">
             <FolderOpen className="w-4 h-4" />
-            <span>Document Intelligence Engine</span>
+            <span>Document Intelligence Vault</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-            <span>Family Documents</span>
+            <span>Family Documents Vault</span>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-[11px] font-bold text-amber-300">
               <Sparkles className="w-3 h-3 text-amber-400" />
               Powered by Gemini
             </span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Upload family policies, deeds, and bills to automatically extract responsibilities, ownership, and key deadlines.
+            Analyze family policies, deeds, and bills. Multiple documents combine into your central Family Knowledge & Responsibility Map.
           </p>
         </div>
 
-        {/* Engine status indicator */}
+        {/* Engine status indicator & Clear button */}
         <div className="flex items-center gap-2 self-start sm:self-auto">
+          {analyzedDocuments.length > 0 && (
+            <button
+              onClick={() => {
+                if (window.confirm('Reset vault and remove all analyzed documents to test empty state?')) {
+                  clearAllAnalyzedDocuments();
+                  setCurrentAnalysis(null);
+                }
+              }}
+              className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-rose-400 text-xs font-medium transition-colors flex items-center gap-1.5"
+              title="Clear vault to test empty state"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Reset Vault</span>
+            </button>
+          )}
+
           <div className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] flex items-center gap-2">
             <span className={`w-2 h-2 rounded-full ${
               serverHealth.isApiKeyConfigured ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
@@ -276,9 +259,9 @@ export default function DocumentsPage() {
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            1-Click Demo Documents (Pre-loaded Sharma Family Files):
+            1-Click Demo Documents (Analyze & Add to Family Map):
           </span>
-          <span className="text-[11px] text-slate-400">Instant test</span>
+          <span className="text-[11px] text-slate-400">Click any document to analyze</span>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -393,12 +376,12 @@ export default function DocumentsPage() {
             <div className="flex items-center justify-center gap-3 text-xs text-slate-400">
               <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Uploading bytes</span>
               <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Gemini Multimodal API</span>
-              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Canonical Schema Validation</span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Cross-Document Aggregation</span>
             </div>
           </div>
         )}
 
-        {/* Error Feedback (STRICT REAL ERROR REPORTING) */}
+        {/* Error Feedback */}
         {analysisError && (
           <div className="lg:col-span-12 p-5 rounded-2xl bg-rose-500/15 border border-rose-500/40 text-rose-300 space-y-2">
             <div className="flex items-center justify-between">
@@ -416,32 +399,32 @@ export default function DocumentsPage() {
             <p className="text-xs text-rose-300/90 leading-relaxed">
               {analysisError}
             </p>
-            <p className="text-[11px] text-slate-400 pt-1 border-t border-rose-500/20">
-              KUTUMB does not substitute mock data when an analysis fails. Please verify that your document is a valid PDF or image file and that your Gemini API key has quota available.
-            </p>
           </div>
         )}
 
       </div>
 
-      {/* GEMINI ANALYSIS RESULT PANEL (CANONICAL SCHEMA VISUALIZATION) */}
+      {/* GEMINI ANALYSIS RESULT PANEL */}
       {currentAnalysis && (
         <div className="p-6 sm:p-8 rounded-2xl bg-slate-900/80 border border-amber-500/40 shadow-2xl space-y-6 relative overflow-hidden">
           <div className="absolute top-0 right-0 px-4 py-1.5 rounded-bl-2xl bg-gradient-to-l from-amber-500/20 to-transparent border-l border-b border-amber-500/30 text-[11px] font-bold text-amber-300 flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            GEMINI DOCUMENT INTELLIGENCE
+            LATEST ANALYSIS RESULT
           </div>
 
-          {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-amber-400">
                   {currentAnalysis.document?.type || 'Analyzed Document'}
                 </span>
-                {currentAnalysis.relevance?.is_relevant === false && (
+                {currentAnalysis.relevance?.is_relevant === false ? (
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-amber-300 border border-amber-500/30">
-                    Not Family Relevant
+                    Not Relevant
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                    Added to Family Map
                   </span>
                 )}
               </div>
@@ -466,7 +449,6 @@ export default function DocumentsPage() {
             </button>
           </div>
 
-          {/* DOCUMENT RELEVANCE NOTICE IF UNRELATED (e.g. SIH Hackathon Problem Statement) */}
           {currentAnalysis.relevance?.is_relevant === false ? (
             <div className="p-5 rounded-xl bg-slate-950/70 border border-amber-500/30 space-y-3">
               <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
@@ -477,163 +459,89 @@ export default function DocumentsPage() {
                 <strong>Gemini Assessment:</strong> {currentAnalysis.relevance?.reason}
               </p>
               <p className="text-[11px] text-slate-400">
-                KUTUMB verified this document using genuine Gemini multimodal parsing. Because it does not pertain to household insurance, property deeds, utilities, loans, or family dependents, no synthetic family records were fabricated.
+                Because this document does not contain family-relevant obligations, 0 responsibilities were added to the family map.
               </p>
             </div>
           ) : (
-            /* FULL CANONICAL EXTRACTION (FOR GENUINELY RELEVANT DOCUMENTS) */
-            <>
-              {/* Grid of Extracted Canonical Sections */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-                {/* 1. People Extracted */}
-                <div className="space-y-3 p-4 rounded-xl bg-slate-950/60 border border-slate-800/80">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                    <UserCheck className="w-4 h-4 text-amber-400" />
-                    People Mentioned ({currentAnalysis.people?.length || 0})
-                  </h3>
-                  <div className="space-y-2">
-                    {currentAnalysis.people?.length === 0 ? (
-                      <p className="text-xs text-slate-500 italic">No specific individuals identified in document.</p>
-                    ) : (
-                      currentAnalysis.people?.map((person, idx) => (
-                        <div key={idx} className="flex items-center justify-between text-xs p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                          <span className="font-semibold text-slate-100">{person.name}</span>
-                          <span className="text-[11px] text-amber-300 font-medium px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
-                            {person.role}
-                          </span>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                {/* 2. Relationships Extracted */}
-                <div className="space-y-3 p-4 rounded-xl bg-slate-950/60 border border-slate-800/80">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                    <Layers className="w-4 h-4 text-blue-400" />
-                    Relationships ({currentAnalysis.relationships?.length || 0})
-                  </h3>
-                  <div className="space-y-2">
-                    {currentAnalysis.relationships?.length === 0 ? (
-                      <p className="text-xs text-slate-500 italic">No specific ownership or legal relationships identified.</p>
-                    ) : (
-                      currentAnalysis.relationships?.map((rel, idx) => (
-                        <div key={idx} className="p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-xs space-y-0.5">
-                          <div className="font-semibold text-slate-200">{rel.from}</div>
-                          <div className="text-[11px] text-amber-400 flex items-center gap-1 pl-2">
-                            <ArrowDown className="w-3 h-3 text-amber-400" />
-                            <span>{rel.relationship}</span>
-                          </div>
-                          <div className="font-medium text-slate-400 pl-4">{rel.to}</div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                {/* 3. Important Dates & Financials */}
-                <div className="space-y-3 p-4 rounded-xl bg-slate-950/60 border border-slate-800/80">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                    <Calendar className="w-4 h-4 text-emerald-400" />
-                    Key Dates & Financials
-                  </h3>
-
-                  {currentAnalysis.financial?.amount !== null && (
-                    <div className="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 flex items-center justify-between text-xs">
-                      <span className="text-slate-400">Financial Amount:</span>
-                      <span className="font-bold text-amber-300 text-sm">
-                        ₹{Number(currentAnalysis.financial?.amount).toLocaleString('en-IN')} {currentAnalysis.financial?.currency}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="space-y-3 p-4 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <UserCheck className="w-4 h-4 text-amber-400" />
+                  People Mentioned ({currentAnalysis.people?.length || 0})
+                </h3>
+                <div className="space-y-2">
+                  {currentAnalysis.people?.map((person, idx) => (
+                    <div key={idx} className="flex items-center justify-between text-xs p-2 rounded-lg bg-slate-900/80 border border-slate-800">
+                      <span className="font-semibold text-slate-100">{person.name}</span>
+                      <span className="text-[11px] text-amber-300 font-medium px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
+                        {person.role}
                       </span>
                     </div>
-                  )}
-
-                  <div className="space-y-2">
-                    {currentAnalysis.dates?.length === 0 ? (
-                      <p className="text-xs text-slate-500 italic">No explicit due or expiry dates found.</p>
-                    ) : (
-                      currentAnalysis.dates?.map((d, idx) => (
-                        <div key={idx} className="flex items-center justify-between text-xs p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                          <span className="text-slate-400">{d.type}</span>
-                          <span className="font-bold text-white">{d.date}</span>
-                        </div>
-                      ))
-                    )}
-                  </div>
+                  ))}
                 </div>
-
               </div>
 
-              {/* 4. Responsibilities Extracted */}
-              <div className="space-y-3 pt-2 border-t border-slate-800/80">
+              <div className="space-y-3 p-4 rounded-xl bg-slate-950/60 border border-slate-800/80">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-rose-400" />
-                  Extracted Responsibilities & Actions ({currentAnalysis.responsibilities?.length || 0})
+                  <Layers className="w-4 h-4 text-blue-400" />
+                  Relationships ({currentAnalysis.relationships?.length || 0})
                 </h3>
-
-                {currentAnalysis.responsibilities?.length === 0 ? (
-                  <p className="text-xs text-slate-400 italic">No pending action required based on this document.</p>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {currentAnalysis.responsibilities?.map((resp, idx) => (
-                      <div key={idx} className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800/90 space-y-2">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="font-bold text-white text-xs">{resp.person}</span>
-                          <Badge variant={resp.priority?.toLowerCase() === 'high' ? 'high' : 'medium'}>
-                            {resp.priority} Priority
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-slate-300 leading-relaxed">
-                          {resp.action}
-                        </p>
-                        <div className="text-[11px] text-amber-300 font-semibold flex items-center gap-1 pt-1">
-                          <Clock className="w-3.5 h-3.5" />
-                          <span>Due: {resp.due_date}</span>
-                        </div>
+                <div className="space-y-2">
+                  {currentAnalysis.relationships?.map((rel, idx) => (
+                    <div key={idx} className="p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-xs space-y-0.5">
+                      <div className="font-semibold text-slate-200">{rel.from}</div>
+                      <div className="text-[11px] text-amber-400 flex items-center gap-1 pl-2">
+                        <ArrowDown className="w-3 h-3 text-amber-400" />
+                        <span>{rel.relationship}</span>
                       </div>
-                    ))}
+                      <div className="font-medium text-slate-400 pl-4">{rel.to}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-3 p-4 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4 text-emerald-400" />
+                  Key Dates & Responsibilities
+                </h3>
+                {currentAnalysis.financial?.amount !== null && (
+                  <div className="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 flex items-center justify-between text-xs">
+                    <span className="text-slate-400">Amount:</span>
+                    <span className="font-bold text-amber-300">
+                      ₹{Number(currentAnalysis.financial?.amount).toLocaleString('en-IN')} {currentAnalysis.financial?.currency}
+                    </span>
                   </div>
                 )}
+                <div className="space-y-2">
+                  {currentAnalysis.responsibilities?.map((resp, idx) => (
+                    <div key={idx} className="p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-xs space-y-1">
+                      <div className="flex justify-between font-semibold text-white">
+                        <span>{resp.person}</span>
+                        <span className="text-amber-300">{resp.due_date}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-300">{resp.action}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </>
-          )}
-
-          {/* Warnings */}
-          {currentAnalysis.warnings?.length > 0 && (
-            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300 space-y-1">
-              <strong className="block font-bold">Document Warnings:</strong>
-              {currentAnalysis.warnings.map((w, idx) => (
-                <p key={idx} className="leading-snug">• {w}</p>
-              ))}
             </div>
           )}
-
-          {/* Traceability Footer */}
-          <div className="pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between text-[11px] text-slate-400">
-            <span>Traceability: Verified from <strong className="text-slate-300 font-mono">{currentAnalysis.document?.source_file}</strong></span>
-            <span className="text-emerald-400 font-medium">No Synthetic Fallback Used</span>
-          </div>
         </div>
       )}
 
-      {/* ALL DOCUMENTS VAULT SECTION */}
+      {/* ALL ANALYZED DOCUMENTS LIST & VAULT */}
       <div className="space-y-4 pt-4 border-t border-slate-800/80">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-lg font-bold text-white">All Family Documents</h2>
-            <p className="text-xs text-slate-400">Verified policies and statements currently tracked for Sharma Family</p>
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <span>Analyzed Family Paperwork</span>
+              <span className="px-2 py-0.5 text-xs rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                {analyzedDocuments.length} Documents in State
+              </span>
+            </h2>
+            <p className="text-xs text-slate-400">Documents contributing to the live Sharma Family Knowledge & Responsibility Map</p>
           </div>
-
-          <button
-            onClick={() => setForceEmptyState(!forceEmptyState)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
-              forceEmptyState
-                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
-            }`}
-          >
-            {forceEmptyState ? '← Restore Documents' : 'Preview Empty State'}
-          </button>
         </div>
 
         {/* Filter Controls */}
@@ -642,114 +550,120 @@ export default function DocumentsPage() {
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
             <input
               type="text"
-              placeholder="Search by document name, policy number, or family member..."
+              placeholder="Search by document title, source file, or type..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 bg-slate-900/60 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50"
             />
           </div>
 
-          <div className="sm:w-56">
-            <select
-              value={selectedMember}
-              onChange={(e) => setSelectedMember(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-slate-900/60 border border-slate-800 rounded-xl text-sm text-slate-300 focus:outline-none focus:border-amber-500/50"
-            >
-              <option value="All">All Family Members</option>
-              <option value="Rajesh">Rajesh Sharma (Papa)</option>
-              <option value="Sunita">Sunita Sharma (Mummy)</option>
-            </select>
+          <div className="flex flex-wrap items-center gap-2">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+                  selectedCategory === cat
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                    : 'bg-slate-900/60 text-slate-400 border border-slate-800/80 hover:text-slate-200'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
           </div>
-        </div>
-
-        {/* Category Pills */}
-        <div className="flex flex-wrap items-center gap-2">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
-                selectedCategory === cat
-                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                  : 'bg-slate-900/60 text-slate-400 border border-slate-800/80 hover:text-slate-200'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-          <span className="ml-auto text-xs text-slate-400">
-            {filteredDocuments.length} documents
-          </span>
         </div>
 
         {/* Document Cards Grid */}
         {filteredDocuments.length === 0 ? (
           <div className="p-10 text-center rounded-2xl bg-slate-900/40 border border-slate-800 space-y-3">
             <FileText className="w-8 h-8 text-slate-500 mx-auto" />
-            <h3 className="text-sm font-bold text-white">No documents match the current filter</h3>
-            <button
-              onClick={() => setForceEmptyState(false)}
-              className="px-3.5 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-semibold"
-            >
-              Restore Sharma Family Documents
-            </button>
+            <h3 className="text-sm font-bold text-white">No analyzed documents in vault</h3>
+            <p className="text-xs text-slate-400 max-w-md mx-auto">
+              Upload a document above or click any of the 1-Click Demo buttons to populate the family knowledge map.
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filteredDocuments.map((doc) => (
-              <div
-                key={doc.id}
-                className="glass-card rounded-2xl p-5 flex flex-col justify-between space-y-4"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-amber-400">
-                      <FileText className="w-5 h-5" />
+            {filteredDocuments.map((item) => {
+              const analysis = item.analysis || {};
+              const isRelevant = analysis.relevance?.is_relevant !== false;
+              const sourceFile = analysis.document?.source_file || item.originalFileName;
+              const title = analysis.document?.title || item.originalFileName;
+              const type = analysis.document?.type || 'Document';
+              const peopleCount = analysis.people?.length || 0;
+              const relsCount = analysis.relationships?.length || 0;
+              const respCount = analysis.responsibilities?.length || 0;
+
+              return (
+                <div
+                  key={item.id}
+                  className="glass-card rounded-2xl p-5 flex flex-col justify-between space-y-4"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-amber-400">
+                        <FileText className="w-5 h-5" />
+                      </div>
+                      <Badge variant={isRelevant ? 'success' : 'default'}>
+                        {isRelevant ? 'Analyzed' : 'Not Relevant'}
+                      </Badge>
                     </div>
-                    <Badge variant={doc.statusType === 'warning' ? 'high' : 'success'}>
-                      {doc.status}
-                    </Badge>
+
+                    <div>
+                      <h3 className="text-base font-bold text-white line-clamp-1">{title}</h3>
+                      <p className="text-xs text-slate-400 font-mono mt-0.5 truncate">{sourceFile}</p>
+                    </div>
+
+                    <p className="text-xs text-slate-400">
+                      Type: <strong className="text-slate-300">{type}</strong>
+                    </p>
+
+                    {/* Metadata tags */}
+                    <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1 text-xs">
+                      <div className="flex justify-between text-slate-300">
+                        <span className="text-slate-400 text-[11px]">People detected:</span>
+                        <span className="font-semibold">{peopleCount}</span>
+                      </div>
+                      <div className="flex justify-between text-slate-300">
+                        <span className="text-slate-400 text-[11px]">Relationships:</span>
+                        <span className="font-semibold">{relsCount}</span>
+                      </div>
+                      <div className="flex justify-between text-slate-300">
+                        <span className="text-slate-400 text-[11px]">Responsibilities:</span>
+                        <span className={`font-semibold ${respCount > 0 ? 'text-amber-300' : 'text-slate-400'}`}>
+                          {respCount}
+                        </span>
+                      </div>
+                    </div>
                   </div>
 
-                  <div>
-                    <h3 className="text-base font-bold text-white">{doc.name}</h3>
-                    <p className="text-xs text-slate-400 font-mono mt-0.5">{doc.policyNo}</p>
-                  </div>
+                  {/* Actions: Inspect & Remove */}
+                  <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                    <button
+                      onClick={() => setSelectedDocModal(item)}
+                      className="flex-1 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Inspect</span>
+                    </button>
 
-                  <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
-                    {doc.description}
-                  </p>
-
-                  <div className="pt-2 border-t border-slate-800/80 space-y-1 text-xs text-slate-300">
-                    <div className="flex justify-between">
-                      <span className="text-slate-400 text-[11px]">Assigned:</span>
-                      <span className="font-semibold text-slate-200">{doc.assignedMember}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400 text-[11px]">Due Date:</span>
-                      <span className="font-semibold text-amber-300">{doc.dueDate}</span>
-                    </div>
+                    <button
+                      onClick={() => {
+                        removeAnalyzedDocument(item.id);
+                        if (currentAnalysis?.document?.source_file === sourceFile) {
+                          setCurrentAnalysis(null);
+                        }
+                      }}
+                      className="p-1.5 rounded-xl bg-slate-800/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 border border-slate-800 hover:border-rose-500/40 transition-colors"
+                      title="Remove from family map"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
-
-                <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
-                  <button
-                    onClick={() => setSelectedDocModal(doc)}
-                    className="flex-1 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center justify-center gap-1.5"
-                  >
-                    <Eye className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Inspect</span>
-                  </button>
-                  <button
-                    onClick={() => alert(`Downloading demo file: ${doc.fileName}`)}
-                    className="p-1.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 text-slate-400 hover:text-slate-200"
-                    title="Download"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -757,11 +671,15 @@ export default function DocumentsPage() {
       {/* Document Detail Modal */}
       {selectedDocModal && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 space-y-5 shadow-2xl animate-fadeIn">
             <div className="flex items-start justify-between gap-4 border-b border-slate-800 pb-4">
               <div>
-                <h3 className="font-bold text-lg text-white">{selectedDocModal.name}</h3>
-                <p className="text-xs text-slate-400 font-mono">{selectedDocModal.fileName}</p>
+                <h3 className="font-bold text-lg text-white">
+                  {selectedDocModal.analysis?.document?.title || selectedDocModal.originalFileName}
+                </h3>
+                <p className="text-xs text-slate-400 font-mono">
+                  {selectedDocModal.analysis?.document?.source_file || selectedDocModal.originalFileName}
+                </p>
               </div>
               <button
                 onClick={() => setSelectedDocModal(null)}
@@ -771,23 +689,41 @@ export default function DocumentsPage() {
               </button>
             </div>
 
-            <div className="space-y-2 text-xs sm:text-sm bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+            <div className="space-y-3 text-xs sm:text-sm bg-slate-950/60 p-4 rounded-xl border border-slate-800">
               <div className="flex justify-between">
-                <span className="text-slate-400">Assigned To:</span>
-                <span className="font-semibold text-slate-200">{selectedDocModal.assignedMember}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Due / Expiry:</span>
-                <span className="font-semibold text-amber-300">{selectedDocModal.dueDate}</span>
+                <span className="text-slate-400">Relevance:</span>
+                <Badge variant={selectedDocModal.analysis?.relevance?.is_relevant !== false ? 'success' : 'default'}>
+                  {selectedDocModal.analysis?.relevance?.is_relevant !== false ? 'Family Relevant' : 'Not Relevant'}
+                </Badge>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Coverage / Value:</span>
-                <span className="font-semibold text-emerald-400">{selectedDocModal.coverage}</span>
+                <span className="text-slate-400">Type:</span>
+                <span className="font-semibold text-slate-200">{selectedDocModal.analysis?.document?.type || 'Document'}</span>
               </div>
-              <div className="pt-2 border-t border-slate-800">
-                <span className="text-slate-400 block text-xs mb-1">Description:</span>
-                <p className="text-xs text-slate-300">{selectedDocModal.description}</p>
+              <div className="flex justify-between">
+                <span className="text-slate-400">People:</span>
+                <span className="font-semibold text-slate-200">
+                  {selectedDocModal.analysis?.people?.map(p => `${p.name} (${p.role})`).join(', ') || 'None'}
+                </span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Dates:</span>
+                <span className="font-semibold text-amber-300">
+                  {selectedDocModal.analysis?.dates?.map(d => `${d.type}: ${d.date}`).join(', ') || 'None'}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Responsibilities:</span>
+                <span className="font-semibold text-white">
+                  {selectedDocModal.analysis?.responsibilities?.length || 0}
+                </span>
+              </div>
+              {selectedDocModal.analysis?.relevance?.reason && (
+                <div className="pt-2 border-t border-slate-800 text-xs text-slate-400">
+                  <span className="font-bold text-slate-300 block mb-1">Reason:</span>
+                  <p>{selectedDocModal.analysis.relevance.reason}</p>
+                </div>
+              )}
             </div>
 
             <div className="pt-2 flex justify-end">

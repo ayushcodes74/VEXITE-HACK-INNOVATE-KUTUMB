@@ -199,59 +199,76 @@ export async function analyzeDocumentWithGemini(fileBuffer, mimeType, originalNa
   const ai = new GoogleGenAI({ apiKey: config.geminiApiKey });
   const base64Data = fileBuffer.toString('base64');
 
-  // Retry up to 3 times in case of temporary 503 high demand spike
+  // Multi-model resilience: if one model hits quota (429) or high demand (503), failover to alternative active flash models
+  const candidateModels = [
+    config.geminiModel || 'gemini-3.5-flash',
+    'gemini-3.7-flash',
+    'gemini-3.5-flash-lite'
+  ].filter((v, i, a) => Boolean(v) && a.indexOf(v) === i);
+
   let lastError;
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    try {
-      const response = await ai.models.generateContent({
-        model: config.geminiModel,
-        contents: [
-          {
-            role: 'user',
-            parts: [
-              {
-                text: `Analyze ONLY the supplied document. Extract structured intelligence into the canonical schema. Original filename: "${originalName}".`
-              },
-              {
-                inlineData: {
-                  mimeType: resolvedMime,
-                  data: base64Data
+  for (const currentModel of candidateModels) {
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        console.log(`[Gemini API] Invoking ${currentModel} for "${originalName}" (attempt ${attempt})...`);
+        const response = await ai.models.generateContent({
+          model: currentModel,
+          contents: [
+            {
+              role: 'user',
+              parts: [
+                {
+                  text: `Analyze ONLY the supplied document. Extract structured intelligence into the canonical schema. Original filename: "${originalName}".`
+                },
+                {
+                  inlineData: {
+                    mimeType: resolvedMime,
+                    data: base64Data
+                  }
                 }
-              }
-            ]
+              ]
+            }
+          ],
+          config: {
+            systemInstruction: KUTUMB_SYSTEM_INSTRUCTION,
+            responseMimeType: 'application/json',
           }
-        ],
-        config: {
-          systemInstruction: KUTUMB_SYSTEM_INSTRUCTION,
-          responseMimeType: 'application/json',
+        });
+
+        const responseText = response.text;
+        if (!responseText) {
+          const error = new Error('INVALID_GEMINI_RESPONSE: Gemini returned an empty response.');
+          error.code = 'INVALID_GEMINI_RESPONSE';
+          throw error;
         }
-      });
 
-      const responseText = response.text;
-      if (!responseText) {
-        const error = new Error('INVALID_GEMINI_RESPONSE: Gemini returned an empty response.');
-        error.code = 'INVALID_GEMINI_RESPONSE';
-        throw error;
-      }
+        // Parse, validate, and enforce canonical schema
+        return parseAndValidateCanonicalSchema(responseText, originalName);
+      } catch (error) {
+        lastError = error;
+        const msg = error.message || '';
+        const is503 = msg.includes('503') || msg.includes('high demand') || msg.includes('UNAVAILABLE');
+        const is429 = msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED');
 
-      // Parse, validate, and enforce canonical schema
-      return parseAndValidateCanonicalSchema(responseText, originalName);
-    } catch (error) {
-      lastError = error;
-      const is503 = error.message && (error.message.includes('503') || error.message.includes('high demand') || error.message.includes('UNAVAILABLE'));
-      if (is503 && attempt < 3) {
-        console.warn(`[Gemini API] Attempt ${attempt} failed with 503 high demand. Retrying in 1.5s...`);
-        await new Promise(r => setTimeout(r, 1500));
-        continue;
+        if (is503 && attempt < 2) {
+          console.warn(`[Gemini API] ${currentModel} attempt ${attempt} failed with 503 high demand. Retrying in 1.5s...`);
+          await new Promise(r => setTimeout(r, 1500));
+          continue;
+        }
+
+        if (is429) {
+          console.warn(`[Gemini API] ${currentModel} hit rate limit / quota (429). Failing over to next available candidate model...`);
+          break; // Try next candidate model immediately
+        }
+
+        console.error(`[Gemini API Call Failed with ${currentModel} for "${originalName}"]:`, error.message);
+        break; // Other error, try next model or fail
       }
-      
-      console.error(`[Gemini API Call Failed for "${originalName}"]:`, error.message);
-      if (error.code) throw error;
-      const apiError = new Error(`GEMINI_API_ERROR: ${error.message}`);
-      apiError.code = 'GEMINI_API_ERROR';
-      throw apiError;
     }
   }
 
-  throw lastError;
+  if (lastError?.code) throw lastError;
+  const apiError = new Error(`GEMINI_API_ERROR: ${lastError?.message || 'Gemini processing failed.'}`);
+  apiError.code = 'GEMINI_API_ERROR';
+  throw apiError;
 }
