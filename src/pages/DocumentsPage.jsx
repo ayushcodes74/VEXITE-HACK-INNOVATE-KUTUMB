@@ -12,7 +12,6 @@ import {
   FileCheck2,
   Cpu,
   Layers,
-  FolderOpen,
   Info,
   ShieldAlert,
   Trash2
@@ -201,17 +200,12 @@ export default function DocumentsPage() {
     <div className="space-y-8 pb-16 animate-fadeIn">
       {/* ── PAGE HEADER ────────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-        <div className="space-y-1.5">
-          <div className="section-label">
-            <FolderOpen className="w-3 h-3" />
-            <span>Documents</span>
-          </div>
-          <h1 className="heading-lg mt-2">
-            Give KUTUMB the documents.<br />
-            <span style={{ color: OLIVE }}>We'll build the context.</span>
+        <div className="space-y-2">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight" style={{ color: '#111111' }}>
+            Your family's source of truth.
           </h1>
-          <p className="text-sm max-w-xl leading-relaxed mt-1" style={{ color: '#888888' }}>
-            Upload family policies, utility bills, and loan statements. Multiple documents combine into a shared family knowledge map.
+          <p className="text-sm max-w-xl leading-relaxed" style={{ color: '#888888' }}>
+            Upload documents and let KUTUMB turn them into structured family knowledge.
           </p>
         </div>
 

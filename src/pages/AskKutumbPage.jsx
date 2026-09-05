@@ -265,13 +265,10 @@ export default function AskKutumbPage() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-extrabold" style={{ color: '#111111' }}>Ask KUTUMB</h1>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(39,174,96,0.06)', color: '#27ae60', border: '1px solid rgba(39,174,96,0.15)' }}>
-                Static Demo Mode
-              </span>
+              <h1 className="text-xl font-extrabold" style={{ color: '#111111' }}>Ask your family knowledge.</h1>
             </div>
             <p className="text-xs" style={{ color: '#888888' }}>
-              Conversational intelligence for Sharma Family policies, dues, and responsibilities.
+              Ask questions about the information KUTUMB has understood from your documents.
             </p>
           </div>
         </div>

@@ -76,14 +76,14 @@ export default function FamilyMapPage() {
               <Network className="w-3 h-3" />
               <span>Visual Relationship Graph</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight" style={{ color: '#111111' }}>
-              Family Responsibility Map
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight" style={{ color: '#111111' }}>              Family Knowledge Map
             </h1>
             <p className="text-xs sm:text-sm mt-1" style={{ color: '#888888' }}>
-              Visual map showing how family members connect to shared assets, insurance policies, and bills.
+              People → Documents → Assets → Responsibilities → Dates.
             </p>
           </div>
         </div>
+
 
         <div className="rounded-2xl p-12 text-center max-w-xl mx-auto space-y-4" style={{ border: '1px dashed rgba(0,0,0,0.10)', background: '#F7F4F0' }}>
           <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto" style={{ background: 'rgba(192,138,32,0.06)', border: '1px solid rgba(192,138,32,0.12)' }}>
@@ -117,10 +117,10 @@ export default function FamilyMapPage() {
             <span>Visual Relationship Graph</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight" style={{ color: '#111111' }}>
-            Family Responsibility Map
+            Family Knowledge Map
           </h1>
           <p className="text-xs sm:text-sm mt-1" style={{ color: '#888888' }}>
-            Visual map showing how family members connect to shared assets, insurance policies, and bills.
+            People → Documents → Assets → Responsibilities → Dates.
           </p>
         </div>
 

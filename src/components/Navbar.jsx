@@ -1,12 +1,19 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, Sparkles, Bell } from 'lucide-react';
+import { Menu, Sparkles, Bell, LogOut } from 'lucide-react';
 import { useFamilyKnowledge } from '../context/FamilyContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function Navbar({ onOpenMobileMenu }) {
   const navigate = useNavigate();
   const { familyKnowledge } = useFamilyKnowledge();
+  const { user, logout } = useAuth();
   const urgentCount = (familyKnowledge?.needsAttention || []).length;
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login', { replace: true });
+  };
 
   return (
     <header
@@ -36,13 +43,13 @@ export default function Navbar({ onOpenMobileMenu }) {
         </div>
       </div>
 
-      {/* Right: Ask + bell */}
+      {/* Right: Ask + bell + user */}
       <div className="flex items-center gap-2 sm:gap-3">
         <button
           onClick={() => navigate('/ask')}
-          className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer focus-ring hover:brightness-105 active:scale-95"
+          className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer focus-ring hover:brightness-105 active:scale-95"
           style={{
-            background: 'linear-gradient(135deg, #5a7a4a 0%, #4a6a3a 100%)',
+            background: '#5a7a4a',
             color: '#FFFFFF',
             boxShadow: '0 2px 8px -2px rgba(90,122,74,0.3)'
           }}
@@ -67,27 +74,30 @@ export default function Navbar({ onOpenMobileMenu }) {
 
         <div className="h-5 w-px hidden sm:block" style={{ background: 'rgba(0,0,0,0.08)' }} />
 
-        {/* Family initials pill */}
+        {/* User pill + Logout */}
         <div
-          className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl cursor-default"
+          className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl"
           style={{ background: '#F7F4F0', border: '1px solid rgba(0,0,0,0.06)' }}
         >
-          <div className="flex -space-x-1.5">
-            {['RS','SS','AS','An'].map((init, i) => (
-              <div
-                key={i}
-                className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-black ring-2 ring-white"
-                style={{
-                  background: ['#c08a20','#c0392b','#2980b9','#27ae60'][i],
-                  color: '#FFFFFF'
-                }}
-              >
-                {init}
-              </div>
-            ))}
+          <div
+            className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-black ring-2 ring-white"
+            style={{ background: '#5a7a4a', color: '#FFFFFF' }}
+          >
+            {user?.userId?.slice(0, 2) || 'U'}
           </div>
-          <span className="text-xs font-semibold" style={{ color: '#555555' }}>Sharma</span>
+          <span className="text-xs font-semibold" style={{ color: '#555555' }}>
+            {user?.displayName || user?.userId || 'User'}
+          </span>
         </div>
+
+        <button
+          onClick={handleLogout}
+          className="p-2 rounded-xl hover:bg-[#F0EDE8] transition-colors focus-ring"
+          style={{ color: '#888888' }}
+          title="Log out"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
       </div>
     </header>
   );

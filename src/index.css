@@ -166,11 +166,19 @@
 }
 
 .stat-num {
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1;
 }
+
+/* ── Staggered fade-in for dashboard sections ─────────────────── */
+
+.stagger-1 { animation-delay: 0ms; }
+.stagger-2 { animation-delay: 60ms; }
+.stagger-3 { animation-delay: 120ms; }
+.stagger-4 { animation-delay: 180ms; }
+.stagger-5 { animation-delay: 240ms; }
 
 /* ── Dashboard-Specific Cards ──────────────────────────────────────── */
 
@@ -197,15 +205,15 @@
 
 .predict-card {
   background: #FFFFFF;
-  border: 1px solid var(--olive-border);
-  border-radius: 1rem;
-  box-shadow: 0 1px 3px rgba(90, 122, 74, 0.04);
+  border: 1px solid rgba(90, 122, 74, 0.12);
+  border-radius: 0.875rem;
+  box-shadow: 0 1px 3px rgba(90, 122, 74, 0.03);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .predict-card:hover {
-  border-color: rgba(90, 122, 74, 0.30);
-  box-shadow: 0 4px 20px -4px rgba(90, 122, 74, 0.12);
+  border-color: rgba(90, 122, 74, 0.25);
+  box-shadow: 0 2px 12px -4px rgba(90, 122, 74, 0.10);
 }
 
 /* ── Scrollbar ─────────────────────────────────────────────────────── */

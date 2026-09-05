@@ -11,29 +11,40 @@ import {
   ChevronRight,
   Leaf
 } from 'lucide-react';
+import { useFamilyKnowledge } from '../context/FamilyContext';
 import { familyInfo } from '../data/mockData';
 
 export default function Sidebar({ isOpen, onClose }) {
+  const { familyKnowledge, analyzedDocuments } = useFamilyKnowledge();
+  const {
+    people = [],
+    needsAttention = [],
+  } = familyKnowledge;
+
+  const docCount = analyzedDocuments.length;
+  const memberCount = people.length;
+  const urgentCount = needsAttention.length;
+
   const navItems = [
     {
       label: 'Dashboard',
       to: '/',
       icon: LayoutDashboard,
-      badge: '1 Action',
+      badge: urgentCount > 0 ? `${urgentCount} Action${urgentCount !== 1 ? 's' : ''}` : null,
       badgeVariant: 'rose'
     },
     {
       label: 'Documents',
       to: '/documents',
       icon: FileText,
-      badge: '6 Docs',
+      badge: docCount > 0 ? `${String(docCount).padStart(2, '0')} Docs` : '0 Docs',
       badgeVariant: 'muted'
     },
     {
       label: 'Family Map',
       to: '/family-map',
       icon: Network,
-      badge: '4 Members',
+      badge: memberCount > 0 ? `${String(memberCount).padStart(2, '0')} Members` : '—',
       badgeVariant: 'olive'
     },
     {
@@ -73,9 +84,8 @@ export default function Sidebar({ isOpen, onClose }) {
         }}
       >
         {/* Brand */}
-        <div className="px-5 pt-6 pb-5 flex items-center justify-between">
+        <div className="px-5 pt-6 pb-4 flex items-center justify-between">
           <NavLink to="/" onClick={onClose} className="group flex items-center gap-3">
-            {/* Wordmark logo */}
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
               style={{ background: 'rgba(90,122,74,0.1)', border: '1px solid rgba(90,122,74,0.2)' }}
@@ -106,7 +116,7 @@ export default function Sidebar({ isOpen, onClose }) {
         </div>
 
         {/* Family context pill */}
-        <div className="mx-4 mb-5 px-3.5 py-2.5 rounded-xl" style={{ background: '#F7F4F0', border: '1px solid rgba(0,0,0,0.05)' }}>
+        <div className="mx-4 mb-4 px-3.5 py-2.5 rounded-xl" style={{ background: '#F7F4F0', border: '1px solid rgba(0,0,0,0.05)' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(90,122,74,0.08)', border: '1px solid rgba(90,122,74,0.15)' }}>
@@ -114,7 +124,7 @@ export default function Sidebar({ isOpen, onClose }) {
               </div>
               <div>
                 <p className="text-xs font-bold" style={{ color: '#1a1a1a' }}>{familyInfo.familyName}</p>
-                <p className="text-[10px]" style={{ color: '#888888' }}>4 Members · Active</p>
+                <p className="text-[10px]" style={{ color: '#888888' }}>{memberCount || 4} Members{docCount > 0 ? ' · Active' : ''}</p>
               </div>
             </div>
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#27ae60' }} />
@@ -149,9 +159,11 @@ export default function Sidebar({ isOpen, onClose }) {
                       <span>{item.label}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded border font-bold ${badgeClass[item.badgeVariant]}`}>
-                        {item.badge}
-                      </span>
+                      {item.badge && (
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded border font-bold ${badgeClass[item.badgeVariant]}`}>
+                          {item.badge}
+                        </span>
+                      )}
                       <ChevronRight
                         className="w-3 h-3 transition-all"
                         style={isActive ? { color: '#5a7a4a', transform: 'translateX(1px)' } : { color: 'transparent' }}
