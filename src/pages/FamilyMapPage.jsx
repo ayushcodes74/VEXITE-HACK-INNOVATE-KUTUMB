@@ -201,13 +201,12 @@ export default function FamilyMapPage() {
         {/* 2. FAMILY MEMBERS LAYER */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
           {filteredMembers.map((member) => {
-            // Find responsibilities for this member
+            // Find responsibilities for this member by matching the person field
             const memberResponsibilities = familyKnowledge.responsibilities.filter((r) => {
-              const assigned = (r.assigned_to || '').toLowerCase();
-              const shared = Array.isArray(r.shared_with) ? r.shared_with.map(s => String(s).toLowerCase()) : [];
-              const mName = member.name.toLowerCase();
-              const mFirst = mName.split(' ')[0];
-              return assigned.includes(mFirst) || shared.some(s => s.includes(mFirst));
+              const respPerson = (r.person || '').toLowerCase().trim();
+              const mName = member.name.toLowerCase().trim();
+              // Exact match or one contains the other (handles "Rajesh" matching "Rajesh Sharma")
+              return respPerson === mName || respPerson.includes(mName) || mName.includes(respPerson);
             });
 
             return (
