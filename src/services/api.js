@@ -1,7 +1,11 @@
 // KUTUMB API Client Service
 // Facilitates communication with the backend Gemini Document Intelligence Engine
 
-const API_BASE = '/api';
+// VITE_API_URL = backend origin (e.g. https://...onrender.com).
+// All backend routes live under /api, so we always append that path.
+// Local dev: VITE_API_URL is unset → '/api' is proxied to localhost:5000 via vite.config.js.
+const _rawBase = (import.meta.env.VITE_API_URL || '').replace(/\/api\/?$/, '');
+const API_BASE = _rawBase ? _rawBase + '/api' : '/api';
 
 /**
  * Check backend server and Gemini engine status
