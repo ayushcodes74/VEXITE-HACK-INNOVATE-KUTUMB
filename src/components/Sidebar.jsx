@@ -1,116 +1,129 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  FileText, 
-  Network, 
-  Sparkles, 
-  Users, 
-  ShieldCheck, 
-  X, 
+import {
+  LayoutDashboard,
+  FileText,
+  Network,
+  Sparkles,
+  Users,
+  ShieldCheck,
+  X,
   ChevronRight,
-  Home
+  Leaf
 } from 'lucide-react';
 import { familyInfo } from '../data/mockData';
 
 export default function Sidebar({ isOpen, onClose }) {
   const navItems = [
     {
-      label: 'Overview',
+      label: 'Dashboard',
       to: '/',
       icon: LayoutDashboard,
       badge: '1 Action',
-      badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/30'
+      badgeVariant: 'rose'
     },
     {
       label: 'Documents',
       to: '/documents',
       icon: FileText,
-      badge: '6 Files',
-      badgeColor: 'bg-slate-800 text-slate-400 border-slate-700'
+      badge: '6 Docs',
+      badgeVariant: 'muted'
     },
     {
       label: 'Family Map',
       to: '/family-map',
       icon: Network,
       badge: '4 Members',
-      badgeColor: 'bg-amber-500/10 text-amber-300 border-amber-500/20'
+      badgeVariant: 'olive'
     },
     {
       label: 'Ask KUTUMB',
       to: '/ask',
       icon: Sparkles,
-      badge: 'AI Assistant',
-      badgeColor: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+      badge: 'AI',
+      badgeVariant: 'amber'
     },
   ];
 
+  const badgeClass = {
+    rose:  'bg-[rgba(192,57,43,0.06)] text-[#c0392b] border-[rgba(192,57,43,0.15)]',
+    muted: 'bg-[#F0EDE8] text-[#888888] border-[rgba(0,0,0,0.06)]',
+    olive: 'bg-[rgba(90,122,74,0.08)] text-[#5a7a4a] border-[rgba(90,122,74,0.18)]',
+    amber: 'bg-[rgba(192,138,32,0.08)] text-[#c08a20] border-[rgba(192,138,32,0.18)]',
+  };
+
   return (
     <>
-      {/* Mobile Backdrop */}
+      {/* Mobile backdrop */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-40 lg:hidden"
+        <div
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
           onClick={onClose}
         />
       )}
 
-      {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-72 bg-slate-900/95 lg:bg-slate-950/80 backdrop-blur-xl border-r border-slate-800/80 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
+        style={{
+          background: '#FFFFFF',
+          borderRight: '1px solid rgba(0,0,0,0.08)',
+          boxShadow: isOpen ? '4px 0 24px rgba(0,0,0,0.08)' : 'none'
+        }}
       >
-        {/* Brand Header */}
-        <div className="p-5 border-b border-slate-800/60 flex items-center justify-between">
-          <NavLink to="/" onClick={onClose} className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
-              <Home className="w-5 h-5 text-slate-950 stroke-[2.5]" />
+        {/* Brand */}
+        <div className="px-5 pt-6 pb-5 flex items-center justify-between">
+          <NavLink to="/" onClick={onClose} className="group flex items-center gap-3">
+            {/* Wordmark logo */}
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: 'rgba(90,122,74,0.1)', border: '1px solid rgba(90,122,74,0.2)' }}
+            >
+              <Leaf className="w-4.5 h-4.5" style={{ color: '#5a7a4a' }} strokeWidth={2.5} />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xl font-black tracking-tight bg-gradient-to-r from-amber-400 via-orange-300 to-amber-200 bg-clip-text text-transparent">
-                  KUTUMB
-                </span>
-                <span className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                  MAP
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-lg font-black tracking-tight" style={{ color: '#111111' }}>KUTUMB</span>
+                <span
+                  className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded"
+                  style={{ background: 'rgba(90,122,74,0.08)', color: '#5a7a4a', border: '1px solid rgba(90,122,74,0.18)' }}
+                >
+                  OS
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 font-medium tracking-wide">
-                Family Knowledge & Responsibility
-              </p>
+              <p className="text-[10px] font-medium mt-0.5" style={{ color: '#888888' }}>Family Knowledge</p>
             </div>
           </NavLink>
 
-          {/* Close button on mobile */}
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 lg:hidden"
-            aria-label="Close menu"
+            className="p-1.5 rounded-lg hover:bg-[#F0EDE8] lg:hidden transition-colors"
+            style={{ color: '#888888' }}
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Family Pill Switcher info */}
-        <div className="mx-4 my-4 p-3 rounded-xl bg-slate-800/40 border border-slate-700/50 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-              <Users className="w-4 h-4" />
+        {/* Family context pill */}
+        <div className="mx-4 mb-5 px-3.5 py-2.5 rounded-xl" style={{ background: '#F7F4F0', border: '1px solid rgba(0,0,0,0.05)' }}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(90,122,74,0.08)', border: '1px solid rgba(90,122,74,0.15)' }}>
+                <Users className="w-3.5 h-3.5" style={{ color: '#5a7a4a' }} />
+              </div>
+              <div>
+                <p className="text-xs font-bold" style={{ color: '#1a1a1a' }}>{familyInfo.familyName}</p>
+                <p className="text-[10px]" style={{ color: '#888888' }}>4 Members · Active</p>
+              </div>
             </div>
-            <div>
-              <p className="text-xs font-bold text-slate-200">{familyInfo.familyName}</p>
-              <p className="text-[10px] text-slate-400">4 Active Members</p>
-            </div>
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#27ae60' }} />
           </div>
-          <span className="w-2 h-2 rounded-full bg-emerald-400 ring-4 ring-emerald-500/20" title="Active Hub"></span>
         </div>
 
-        {/* Navigation Links */}
-        <nav className="flex-1 px-3 space-y-1.5 overflow-y-auto py-2">
-          <div className="px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-            Workspace
-          </div>
+        {/* Nav items */}
+        <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
+          <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-widest" style={{ color: '#AAAAAA' }}>Workspace</p>
 
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -121,10 +134,8 @@ export default function Sidebar({ isOpen, onClose }) {
                 end={item.to === '/'}
                 onClick={onClose}
                 className={({ isActive }) =>
-                  `group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                    isActive
-                      ? 'bg-gradient-to-r from-amber-500/15 to-orange-500/10 text-amber-300 border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.08)]'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent'
+                  `group flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                    isActive ? 'nav-link-active' : 'nav-link-idle'
                   }`
                 }
               >
@@ -132,25 +143,18 @@ export default function Sidebar({ isOpen, onClose }) {
                   <>
                     <div className="flex items-center gap-3">
                       <Icon
-                        className={`w-4 h-4 transition-colors ${
-                          isActive ? 'text-amber-400' : 'text-slate-400 group-hover:text-slate-200'
-                        }`}
+                        className="w-4 h-4 shrink-0 transition-colors"
+                        style={isActive ? { color: '#5a7a4a' } : {}}
                       />
                       <span>{item.label}</span>
                     </div>
-
                     <div className="flex items-center gap-1.5">
-                      {item.badge && (
-                        <span
-                          className={`text-[10px] px-2 py-0.5 rounded-full border font-medium ${item.badgeColor}`}
-                        >
-                          {item.badge}
-                        </span>
-                      )}
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded border font-bold ${badgeClass[item.badgeVariant]}`}>
+                        {item.badge}
+                      </span>
                       <ChevronRight
-                        className={`w-3.5 h-3.5 transition-transform ${
-                          isActive ? 'text-amber-400 translate-x-0.5' : 'text-slate-600 opacity-0 group-hover:opacity-100'
-                        }`}
+                        className="w-3 h-3 transition-all"
+                        style={isActive ? { color: '#5a7a4a', transform: 'translateX(1px)' } : { color: 'transparent' }}
                       />
                     </div>
                   </>
@@ -160,19 +164,19 @@ export default function Sidebar({ isOpen, onClose }) {
           })}
         </nav>
 
-        {/* Tagline & Family Security Badge footer */}
-        <div className="p-4 border-t border-slate-800/60 bg-slate-950/40">
-          <div className="p-3 rounded-xl bg-gradient-to-b from-slate-800/40 to-slate-900/60 border border-slate-800 space-y-2">
-            <div className="flex items-center gap-2 text-slate-300">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span className="text-xs font-semibold">Shared Family Trust</span>
+        {/* Footer: tagline */}
+        <div className="p-4" style={{ borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+          <div className="px-3 py-3 rounded-xl" style={{ background: 'rgba(90,122,74,0.04)', border: '1px solid rgba(90,122,74,0.1)' }}>
+            <div className="flex items-center gap-2 mb-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 shrink-0" style={{ color: '#5a7a4a' }} />
+              <span className="text-xs font-bold" style={{ color: '#5a7a4a' }}>Family Trust Layer</span>
             </div>
-            <p className="text-[11px] text-slate-400 leading-relaxed italic">
-              "Because family knowledge shouldn't live in one person's head."
+            <p className="text-[10px] leading-relaxed italic" style={{ color: '#888888' }}>
+              "Family knowledge shouldn't live in one person's head."
             </p>
-            <div className="pt-1 flex items-center justify-between text-[10px] text-slate-400 border-t border-slate-800/80">
+            <div className="flex items-center justify-between mt-2 pt-2 text-[9px]" style={{ borderTop: '1px solid rgba(0,0,0,0.04)', color: '#AAAAAA' }}>
               <span>Synced: {familyInfo.lastSynced}</span>
-              <span className="text-emerald-400 font-medium">100% Private</span>
+              <span style={{ color: '#5a7a4a' }} className="font-semibold">Private</span>
             </div>
           </div>
         </div>

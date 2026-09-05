@@ -10,16 +10,16 @@ import {
   GraduationCap, 
   HeartHandshake, 
   Info, 
-  Sparkles,
-  ChevronDown,
   ArrowRight,
-  FileText,
-  Calendar,
-  AlertCircle
+  Calendar
 } from 'lucide-react';
 import { useFamilyKnowledge } from '../context/FamilyContext';
 import Badge from '../components/Badge';
 import MemberAvatar from '../components/MemberAvatar';
+
+const OLIVE = '#5a7a4a';
+const OLIVE_DIM = 'rgba(90,122,74,0.08)';
+const OLIVE_BORDER = 'rgba(90,122,74,0.18)';
 
 export default function FamilyMapPage() {
   const { familyKnowledge, is_empty } = useFamilyKnowledge();
@@ -29,21 +29,21 @@ export default function FamilyMapPage() {
   const getNodeIcon = (title = '', category = '') => {
     const text = `${title} ${category}`.toLowerCase();
     if (text.includes('health') || text.includes('medic') || text.includes('insurance')) {
-      return <Shield className="w-4 h-4 text-rose-400" />;
+      return <Shield className="w-4 h-4" style={{ color: '#c0392b' }} />;
     }
     if (text.includes('car') || text.includes('vehicle') || text.includes('motor')) {
-      return <Car className="w-4 h-4 text-blue-400" />;
+      return <Car className="w-4 h-4" style={{ color: '#2980b9' }} />;
     }
     if (text.includes('home') || text.includes('property') || text.includes('tax') || text.includes('house')) {
-      return <Home className="w-4 h-4 text-indigo-400" />;
+      return <Home className="w-4 h-4" style={{ color: '#5b5ea6' }} />;
     }
     if (text.includes('electric') || text.includes('power') || text.includes('bill') || text.includes('utility')) {
-      return <Zap className="w-4 h-4 text-amber-400" />;
+      return <Zap className="w-4 h-4" style={{ color: '#c08a20' }} />;
     }
     if (text.includes('edu') || text.includes('school') || text.includes('college')) {
-      return <GraduationCap className="w-4 h-4 text-emerald-400" />;
+      return <GraduationCap className="w-4 h-4" style={{ color: '#27ae60' }} />;
     }
-    return <HeartHandshake className="w-4 h-4 text-purple-400" />;
+    return <HeartHandshake className="w-4 h-4" style={{ color: '#8e44ad' }} />;
   };
 
   const getUrgencyBadge = (priority) => {
@@ -72,32 +72,32 @@ export default function FamilyMapPage() {
       <div className="space-y-8 pb-12">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-400 mb-1">
-              <Network className="w-4 h-4" />
+            <div className="section-label mb-1">
+              <Network className="w-3 h-3" />
               <span>Visual Relationship Graph</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight" style={{ color: '#111111' }}>
               Family Responsibility Map
             </h1>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1">
+            <p className="text-xs sm:text-sm mt-1" style={{ color: '#888888' }}>
               Visual map showing how family members connect to shared assets, insurance policies, and bills.
             </p>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-dashed border-slate-800 bg-slate-900/30 p-12 text-center max-w-xl mx-auto space-y-4">
-          <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
-            <Users className="w-7 h-7" />
+        <div className="rounded-2xl p-12 text-center max-w-xl mx-auto space-y-4" style={{ border: '1px dashed rgba(0,0,0,0.10)', background: '#F7F4F0' }}>
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto" style={{ background: 'rgba(192,138,32,0.06)', border: '1px solid rgba(192,138,32,0.12)' }}>
+            <Users className="w-7 h-7" style={{ color: '#c08a20' }} />
           </div>
           <div className="space-y-1">
-            <h3 className="text-lg font-bold text-white">Your family context is waiting to be built</h3>
-            <p className="text-sm text-slate-400 max-w-md mx-auto">
+            <h3 className="text-lg font-bold" style={{ color: '#111111' }}>Your family context is waiting to be built</h3>
+            <p className="text-sm max-w-md mx-auto" style={{ color: '#888888' }}>
               Upload your first family document to begin mapping family members, assets, and shared responsibilities.
             </p>
           </div>
           <Link
             to="/documents"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold text-sm shadow-md shadow-amber-500/20 hover:brightness-110 transition-all cursor-pointer"
+            className="k-btn-primary inline-flex items-center gap-2"
           >
             <span>Add First Document</span>
             <ArrowRight className="w-4 h-4" />
@@ -112,14 +112,14 @@ export default function FamilyMapPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-400 mb-1">
-            <Network className="w-4 h-4" />
+          <div className="section-label mb-1">
+            <Network className="w-3 h-3" />
             <span>Visual Relationship Graph</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight" style={{ color: '#111111' }}>
             Family Responsibility Map
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm mt-1" style={{ color: '#888888' }}>
             Visual map showing how family members connect to shared assets, insurance policies, and bills.
           </p>
         </div>
@@ -128,11 +128,13 @@ export default function FamilyMapPage() {
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setSelectedMember('all')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-              selectedMember === 'all'
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
-                : 'bg-slate-900 text-slate-400 border border-slate-800 hover:text-slate-200'
-            }`}
+            className="px-3 py-1.5 rounded-xl text-xs font-medium transition-all"
+            style={{
+              background: selectedMember === 'all' ? OLIVE_DIM : '#FFFFFF',
+              color: selectedMember === 'all' ? OLIVE : '#888888',
+              border: `1px solid ${selectedMember === 'all' ? OLIVE_BORDER : 'rgba(0,0,0,0.06)'}`,
+              boxShadow: selectedMember === 'all' ? '0 1px 3px rgba(90,122,74,0.08)' : 'none'
+            }}
           >
             All Members ({members.length})
           </button>
@@ -140,11 +142,13 @@ export default function FamilyMapPage() {
             <button
               key={m.name}
               onClick={() => setSelectedMember(m.name)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-                selectedMember.toLowerCase() === m.name.toLowerCase()
-                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
-                  : 'bg-slate-900 text-slate-400 border border-slate-800 hover:text-slate-200'
-              }`}
+              className="px-3 py-1.5 rounded-xl text-xs font-medium transition-all"
+              style={{
+                background: selectedMember.toLowerCase() === m.name.toLowerCase() ? OLIVE_DIM : '#FFFFFF',
+                color: selectedMember.toLowerCase() === m.name.toLowerCase() ? OLIVE : '#888888',
+                border: `1px solid ${selectedMember.toLowerCase() === m.name.toLowerCase() ? OLIVE_BORDER : 'rgba(0,0,0,0.06)'}`,
+                boxShadow: selectedMember.toLowerCase() === m.name.toLowerCase() ? '0 1px 3px rgba(90,122,74,0.08)' : 'none'
+              }}
             >
               {m.name.split(' ')[0]}'s Branch
             </button>
@@ -153,49 +157,45 @@ export default function FamilyMapPage() {
       </div>
 
       {/* Info Callout */}
-      <div className="p-4 rounded-xl bg-slate-900/50 border border-slate-800 flex items-start gap-3 text-xs text-slate-300">
-        <Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+      <div className="p-4 rounded-xl flex items-start gap-3 text-xs" style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.06)', color: '#555555' }}>
+        <Info className="w-4 h-4 shrink-0 mt-0.5" style={{ color: '#c08a20' }} />
         <div>
-          <strong className="text-white">Active Intelligence Graph:</strong> Derived automatically from {familyKnowledge.documents.length} verified documents in your vault.
-          <span className="font-mono text-amber-300 mx-1">
+          <strong style={{ color: '#111111' }}>Active Intelligence Graph:</strong> Derived automatically from {familyKnowledge.documents.length} verified documents in your vault.
+          <span className="font-mono mx-1" style={{ color: OLIVE }}>
             {familyKnowledge.familyName || 'Family'} Core ➔ {members.map(m => m.name.split(' ')[0]).join(', ')} ➔ {familyKnowledge.responsibilities.length} Responsibilities
           </span>.
         </div>
       </div>
 
       {/* MAP TREE CONTAINER */}
-      <div className="relative p-6 sm:p-10 rounded-2xl bg-slate-900/40 border border-slate-800/80 overflow-hidden space-y-12">
+      <div className="relative p-6 sm:p-10 rounded-2xl overflow-hidden space-y-12" style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.06)' }}>
         {/* Subtle grid backdrop */}
         <div 
-          className="absolute inset-0 opacity-[0.03] pointer-events-none"
-          style={{
-            backgroundImage: `radial-gradient(#ffffff 1px, transparent 1px)`,
-            backgroundSize: '24px 24px'
-          }}
+          className="absolute inset-0 opacity-100 pointer-events-none map-grid-bg"
         />
 
         {/* 1. ROOT NODE: FAMILY CORE */}
         <div className="flex flex-col items-center justify-center relative z-10">
-          <div className="p-5 rounded-2xl bg-gradient-to-b from-amber-500/15 to-orange-500/5 border border-amber-500/35 shadow-[0_0_50px_rgba(245,158,11,0.12)] text-center max-w-sm w-full space-y-2 group hover:scale-[1.02] transition-transform">
-            <div className="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-500/30 mx-auto flex items-center justify-center text-amber-300 shadow-md shadow-amber-500/15">
-              <Users className="w-6 h-6 stroke-[2]" />
+          <div className="p-5 rounded-2xl text-center max-w-sm w-full space-y-2 group hover:scale-[1.02] transition-transform" style={{ background: 'linear-gradient(135deg, rgba(90,122,74,0.06) 0%, rgba(90,122,74,0.02) 100%)', border: `1px solid ${OLIVE_BORDER}`, boxShadow: '0 4px 24px -8px rgba(90,122,74,0.10)' }}>
+            <div className="w-12 h-12 rounded-xl mx-auto flex items-center justify-center shadow-sm" style={{ background: OLIVE_DIM, border: `1px solid ${OLIVE_BORDER}` }}>
+              <Users className="w-6 h-6 stroke-[2]" style={{ color: OLIVE }} />
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400">
+              <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: OLIVE }}>
                 Central Family Core
               </span>
-              <h2 className="text-xl font-extrabold text-white">
+              <h2 className="text-xl font-extrabold" style={{ color: '#111111' }}>
                 {familyKnowledge.familyName || 'Family'}
               </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
-                {members.length} Members · {familyKnowledge.responsibilities.length} Obligations · {familyKnowledge.entities.length} Entities
+              <p className="text-xs mt-0.5" style={{ color: '#888888' }}>
+                {members.length} Members · {familyKnowledge.responsibilities.length} Obligations · {familyKnowledge.entities.length} Entities
               </p>
             </div>
           </div>
 
           {/* Stem connector */}
-          <div className="w-0.5 h-10 bg-gradient-to-b from-amber-500/60 to-slate-700"></div>
-          <div className="w-3 h-3 rounded-full bg-amber-500 ring-4 ring-amber-500/20"></div>
+          <div className="w-0.5 h-10" style={{ background: `linear-gradient(to bottom, ${OLIVE}60, #D5D0CA)` }}></div>
+          <div className="w-3 h-3 rounded-full ring-4" style={{ background: OLIVE, ringColor: 'rgba(90,122,74,0.15)' }}></div>
         </div>
 
         {/* 2. FAMILY MEMBERS LAYER */}
@@ -214,15 +214,24 @@ export default function FamilyMapPage() {
               <div key={member.name} className="flex flex-col items-center space-y-6">
                 
               {/* Member Card */}
-              <div className={`w-full p-4 rounded-xl bg-slate-800/70 border shadow-lg text-center space-y-2 relative ${
+              <div className={`w-full p-4 rounded-xl text-center space-y-2 relative ${
                 memberResponsibilities.filter(r => r.priority === 'high').length > 0
-                  ? 'border-rose-500/40 border-l-4 border-l-rose-500'
+                  ? 'shadow-md'
+                  : ''
+              }`} style={{
+                background: '#FFFFFF',
+                border: memberResponsibilities.filter(r => r.priority === 'high').length > 0
+                  ? '1px solid rgba(192,57,43,0.15)'
+                  : '1px solid rgba(0,0,0,0.06)',
+                borderLeft: memberResponsibilities.filter(r => r.priority === 'high').length > 0
+                  ? '4px solid #c0392b'
                   : memberResponsibilities.length > 0
-                  ? 'border-amber-500/25 border-l-4 border-l-amber-500/60'
-                  : 'border-slate-700/60'
-              }`}>
+                  ? `4px solid ${OLIVE}60`
+                  : '1px solid rgba(0,0,0,0.06)',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.04)'
+              }}>
                 <div className="flex justify-center -mt-8">
-                  <div className="p-1 rounded-full bg-slate-900 border border-slate-700">
+                  <div className="p-1 rounded-full ring-2 ring-white" style={{ background: '#FFFFFF' }}>
                     <MemberAvatar
                       member={{
                         name: member.name,
@@ -235,81 +244,84 @@ export default function FamilyMapPage() {
                 </div>
 
                 <div className="pt-1">
-                  <h3 className="font-bold text-sm sm:text-base text-white">
+                  <h3 className="font-bold text-sm sm:text-base" style={{ color: '#111111' }}>
                     {member.name}
                   </h3>
-                  <span className="text-[11px] text-amber-400/90 font-medium block capitalize">
+                  <span className="text-[11px] font-medium block capitalize" style={{ color: OLIVE }}>
                     {member.roles?.join(' · ') || 'Family Member'}
                   </span>
                 </div>
 
-                <div className="text-[11px] text-slate-400 border-t border-slate-700/60 pt-2 flex items-center justify-center gap-1.5">
+                <div className="text-[11px] pt-2 flex items-center justify-center gap-1.5" style={{ color: '#888888', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
                   <span className={`w-2 h-2 rounded-full ${
-                    memberResponsibilities.filter(r => r.priority === 'high').length > 0 ? 'bg-rose-400' : 'bg-emerald-400'
-                  }`}></span>
+                    memberResponsibilities.filter(r => r.priority === 'high').length > 0 ? '' : ''
+                  }`} style={{ background: memberResponsibilities.filter(r => r.priority === 'high').length > 0 ? '#c0392b' : '#27ae60' }}></span>
                   <span>{memberResponsibilities.length} Linked Obligations</span>
                 </div>
               </div>
 
-                {/* Vertical link connector */}
-                <div className="w-0.5 h-6 bg-slate-700"></div>
+              {/* Vertical link connector */}
+              <div className="w-0.5 h-6" style={{ background: '#D5D0CA' }}></div>
 
-                {/* RESPONSIBILITY / ASSET CARDS UNDER THIS MEMBER */}
-                <div className="w-full space-y-3">
-                  {memberResponsibilities.length === 0 ? (
-                    <div className="p-4 rounded-xl bg-slate-900/30 border border-dashed border-slate-800 text-center text-xs text-slate-600">
-                      No direct obligations linked yet
-                    </div>
-                  ) : (
-                    memberResponsibilities.map((resp) => (
-                      <div
-                        key={resp.id}
-                        onClick={() => setSelectedNode(resp)}
-                        className="cursor-pointer rounded-xl p-3 border border-slate-800 hover:border-amber-500/40 bg-slate-900/50 hover:bg-slate-900/80 space-y-2 transition-all group"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <div className="p-1.5 rounded-lg bg-slate-800 border border-slate-700/60 group-hover:scale-105 transition-transform shrink-0">
-                              {getNodeIcon(resp.title, resp.category)}
-                            </div>
-                            <div>
-                              <h4 className="text-xs font-bold text-slate-200 group-hover:text-amber-300 transition-colors leading-snug">
-                                {resp.title}
-                              </h4>
-                              <span className="text-[10px] text-slate-500">
-                                {resp.category || 'Obligation'}
-                              </span>
-                            </div>
+              {/* RESPONSIBILITY / ASSET CARDS UNDER THIS MEMBER */}
+              <div className="w-full space-y-3">
+                {memberResponsibilities.length === 0 ? (
+                  <div className="p-4 rounded-xl text-center text-xs" style={{ background: '#F7F4F0', border: '1px dashed rgba(0,0,0,0.08)', color: '#AAAAAA' }}>
+                    No direct obligations linked yet
+                  </div>
+                ) : (
+                  memberResponsibilities.map((resp) => (
+                    <div
+                      key={resp.id}
+                      onClick={() => setSelectedNode(resp)}
+                      className="cursor-pointer rounded-xl p-3 space-y-2 transition-all group"
+                      style={{ background: '#FAFAF8', border: '1px solid rgba(0,0,0,0.06)' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(90,122,74,0.25)'; e.currentTarget.style.background = '#FFFFFF'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.06)'; e.currentTarget.style.background = '#FAFAF8'; }}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 rounded-lg group-hover:scale-105 transition-transform shrink-0" style={{ background: '#F0EDE8', border: '1px solid rgba(0,0,0,0.04)' }}>
+                            {getNodeIcon(resp.title, resp.category)}
                           </div>
-
-                          {getUrgencyBadge(resp.priority)}
+                          <div>
+                            <h4 className="text-xs font-bold leading-snug group-hover:underline" style={{ color: '#333333' }}>
+                              {resp.title}
+                            </h4>
+                            <span className="text-[10px]" style={{ color: '#AAAAAA' }}>
+                              {resp.category || 'Obligation'}
+                            </span>
+                          </div>
                         </div>
 
-                        {(resp.due_date || resp.amount) && (
-                          <div className="flex items-center gap-2 text-[10px]">
-                            {resp.due_date && (
-                              <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-800 border border-slate-700/60 text-slate-300">
-                                <Calendar className="w-3 h-3 text-amber-400" />
-                                {resp.due_date}
-                              </span>
-                            )}
-                            {resp.amount && (
-                              <span className="px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 font-bold text-amber-300">
-                                {resp.amount}
-                              </span>
-                            )}
-                          </div>
-                        )}
-
-                        {resp.why_this_matters && (
-                          <p className="text-[10px] text-slate-500 leading-snug line-clamp-2">
-                            {resp.why_this_matters}
-                          </p>
-                        )}
+                        {getUrgencyBadge(resp.priority)}
                       </div>
-                    ))
-                  )}
-                </div>
+
+                      {(resp.due_date || resp.amount) && (
+                        <div className="flex items-center gap-2 text-[10px]">
+                          {resp.due_date && (
+                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-md" style={{ background: '#F0EDE8', border: '1px solid rgba(0,0,0,0.04)', color: '#555555' }}>
+                              <Calendar className="w-3 h-3" style={{ color: '#c08a20' }} />
+                              {resp.due_date}
+                            </span>
+                          )}
+                          {resp.amount && (
+                            <span className="px-2 py-0.5 rounded-md font-bold" style={{ background: 'rgba(192,138,32,0.06)', border: '1px solid rgba(192,138,32,0.12)', color: '#c08a20' }}>
+                              {resp.amount}
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {resp.why_this_matters && (
+                        <p className="text-[10px] leading-snug line-clamp-2" style={{ color: '#AAAAAA' }}>
+                          {resp.why_this_matters}
+                        </p>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
 
               </div>
             );
@@ -317,22 +329,22 @@ export default function FamilyMapPage() {
         </div>
 
         {/* Bottom Legend */}
-        <div className="pt-8 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-400">
+        <div className="pt-8 flex flex-wrap items-center justify-between gap-4 text-xs" style={{ borderTop: '1px solid rgba(0,0,0,0.05)', color: '#888888' }}>
           <div className="flex flex-wrap items-center gap-4">
-            <span className="font-semibold text-slate-300">Responsibility Status:</span>
+            <span className="font-semibold" style={{ color: '#555555' }}>Responsibility Status:</span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span> High Priority (≤14 days)
+              <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#c0392b' }}></span> High Priority (≤14 days)
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Upcoming (≤30 days)
+              <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#c08a20' }}></span> Upcoming (≤30 days)
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> Completed / Paid
+              <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#27ae60' }}></span> Completed / Paid
             </span>
           </div>
 
-          <div className="text-slate-400 text-[11px]">
-            Live Cross-Document Graph • {familyKnowledge.documents.length} Source Documents Connected
+          <div className="text-[11px]" style={{ color: '#AAAAAA' }}>
+            Live Cross-Document Graph · {familyKnowledge.documents.length} Source Documents Connected
           </div>
         </div>
       </div>

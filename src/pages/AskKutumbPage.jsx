@@ -6,16 +6,15 @@ import {
   User, 
   ArrowRight, 
   Calendar, 
-  CreditCard, 
-  ShieldAlert, 
-  CheckCircle2, 
   Info, 
   RotateCcw, 
-  Zap, 
-  HelpCircle 
+  Zap 
 } from 'lucide-react';
 import { useFamilyKnowledge } from '../context/FamilyContext';
-import Badge from '../components/Badge';
+
+const OLIVE = '#5a7a4a';
+const OLIVE_DIM = 'rgba(90,122,74,0.08)';
+const OLIVE_BORDER = 'rgba(90,122,74,0.18)';
 
 export default function AskKutumbPage() {
   const { familyKnowledge, is_empty } = useFamilyKnowledge();
@@ -25,9 +24,7 @@ export default function AskKutumbPage() {
       return {
         id: 'welcome',
         sender: 'kutumb',
-        text: `Namaste! I am KUTUMB, your Family Intelligence Assistant. 
-
-Your family vault currently has no analyzed documents. Upload bills, policies, or receipts in Documents Vault to begin indexing family responsibilities.`,
+        text: `Namaste! I am KUTUMB, your Family Intelligence Assistant. \n\nYour family vault currently has no analyzed documents. Upload bills, policies, or receipts in Documents Vault to begin indexing family responsibilities.`,
         highlights: null,
         recommendation: "Go to Documents Vault to upload or analyze demo documents.",
         timestamp: 'Just now'
@@ -38,14 +35,7 @@ Your family vault currently has no analyzed documents. Upload bills, policies, o
     return {
       id: 'welcome',
       sender: 'kutumb',
-      text: `Namaste! I am KUTUMB, your ${familyKnowledge.familyName || 'Family'} Intelligence Assistant. 
-
-I have indexed your family knowledge map:
-• ${familyKnowledge.people.length} Family Members (${memberNames})
-• ${familyKnowledge.documents.length} Verified Documents & Records
-• ${familyKnowledge.responsibilities.length} Active Obligations & Deadlines
-
-Click any preset question below or ask me about policies, ownership, and dues!`,
+      text: `Namaste! I am KUTUMB, your ${familyKnowledge.familyName || 'Family'} Intelligence Assistant. \n\nI have indexed your family knowledge map:\n• ${familyKnowledge.people.length} Family Members (${memberNames})\n• ${familyKnowledge.documents.length} Verified Documents & Records\n• ${familyKnowledge.responsibilities.length} Active Obligations & Deadlines\n\nClick any preset question below or ask me about policies, ownership, and dues!`,
       highlights: null,
       recommendation: null,
       timestamp: 'Just now'
@@ -268,19 +258,19 @@ Click any preset question below or ask me about policies, ownership, and dues!`,
   return (
     <div className="flex flex-col h-[calc(100vh-8.5rem)] max-w-4xl mx-auto space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+      <div className="flex items-center justify-between pb-3" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-slate-950 shadow-lg shadow-amber-500/20">
+          <div className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-sm" style={{ background: 'linear-gradient(135deg, #5a7a4a, #4a6a3a)', color: '#FFFFFF' }}>
             <Sparkles className="w-5 h-5 stroke-[2.5]" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-extrabold text-white">Ask KUTUMB</h1>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+              <h1 className="text-xl font-extrabold" style={{ color: '#111111' }}>Ask KUTUMB</h1>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(39,174,96,0.06)', color: '#27ae60', border: '1px solid rgba(39,174,96,0.15)' }}>
                 Static Demo Mode
               </span>
             </div>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs" style={{ color: '#888888' }}>
               Conversational intelligence for Sharma Family policies, dues, and responsibilities.
             </p>
           </div>
@@ -288,7 +278,8 @@ Click any preset question below or ask me about policies, ownership, and dues!`,
 
         <button
           onClick={handleResetChat}
-          className="p-2 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-colors"
+          className="p-2 rounded-xl transition-colors"
+          style={{ color: '#888888' }}
           title="Reset conversation"
         >
           <RotateCcw className="w-4 h-4" />
@@ -297,8 +288,8 @@ Click any preset question below or ask me about policies, ownership, and dues!`,
 
       {/* Preset Question Chips */}
       <div className="space-y-2">
-        <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-          <Zap className="w-3 h-3 text-amber-400" />
+        <span className="text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: '#888888' }}>
+          <Zap className="w-3 h-3" style={{ color: '#c08a20' }} />
           Quick Questions
         </span>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -306,20 +297,23 @@ Click any preset question below or ask me about policies, ownership, and dues!`,
             <button
               key={q.id}
               onClick={() => handleSelectPreset(q.id, q.label)}
-              className="group flex items-center gap-3 px-4 py-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800/90 text-slate-300 hover:text-white border border-slate-800 hover:border-amber-500/40 text-xs font-medium transition-all text-left focus-ring cursor-pointer"
+              className="group flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium transition-all text-left focus-ring cursor-pointer"
+              style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.06)', color: '#555555' }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = OLIVE_BORDER; e.currentTarget.style.color = '#111111'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.06)'; e.currentTarget.style.color = '#555555'; }}
             >
-              <span className="w-5 h-5 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-[10px] font-bold shrink-0">
+              <span className="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0" style={{ background: OLIVE_DIM, border: `1px solid ${OLIVE_BORDER}`, color: OLIVE }}>
                 {idx + 1}
               </span>
               <span className="flex-1 leading-snug">{q.label}</span>
-              <ArrowRight className="w-3 h-3 text-slate-600 group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all shrink-0" />
+              <ArrowRight className="w-3 h-3 shrink-0 transition-all group-hover:translate-x-0.5" style={{ color: '#D5D0CA' }} />
             </button>
           ))}
         </div>
       </div>
 
       {/* Messages Stream Container */}
-      <div className="flex-1 overflow-y-auto pr-1 space-y-5 rounded-2xl bg-slate-950/60 border border-slate-800/60 p-4 sm:p-5" style={{ borderTop: '2px solid rgba(245,158,11,0.15)' }}>
+      <div className="flex-1 overflow-y-auto pr-1 space-y-5 rounded-2xl p-4 sm:p-5" style={{ background: '#F7F4F0', border: '1px solid rgba(0,0,0,0.06)', borderTop: `2px solid ${OLIVE}20` }}>
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -328,7 +322,7 @@ Click any preset question below or ask me about policies, ownership, and dues!`,
             }`}
           >
             {msg.sender === 'kutumb' && (
-              <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 mt-1">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-1" style={{ background: OLIVE_DIM, border: `1px solid ${OLIVE_BORDER}`, color: OLIVE }}>
                 <Bot className="w-4 h-4" />
               </div>
             )}
@@ -336,9 +330,19 @@ Click any preset question below or ask me about policies, ownership, and dues!`,
             <div
               className={`max-w-xl rounded-2xl p-4 space-y-3 ${
                 msg.sender === 'user'
-                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-medium rounded-tr-none shadow-md shadow-amber-500/10'
-                  : 'bg-slate-900/90 border border-slate-800 text-slate-200 rounded-tl-none shadow-sm'
+                  ? 'rounded-tr-none'
+                  : 'rounded-tl-none'
               }`}
+              style={msg.sender === 'user' ? {
+                background: 'linear-gradient(135deg, #5a7a4a, #4a6a3a)',
+                color: '#FFFFFF',
+                boxShadow: '0 2px 8px -2px rgba(90,122,74,0.25)'
+              } : {
+                background: '#FFFFFF',
+                border: '1px solid rgba(0,0,0,0.06)',
+                color: '#333333',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
+              }}
             >
               <div className="text-xs sm:text-sm whitespace-pre-line leading-relaxed">
                 {msg.text}
@@ -346,36 +350,41 @@ Click any preset question below or ask me about policies, ownership, and dues!`,
 
               {/* Rich response cards for KUTUMB answers */}
               {msg.highlights && msg.highlights.length > 0 && (
-                <div className="space-y-1.5 pt-2 border-t border-slate-800/60">
+                <div className="space-y-1.5 pt-2" style={{ borderTop: '1px solid rgba(0,0,0,0.05)' }}>
                   {msg.highlights.map((item, idx) => (
                     <div
                       key={idx}
-                      className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 text-xs animate-fadeIn"
+                      className="p-3 rounded-xl space-y-2 text-xs animate-fadeIn"
+                      style={{ background: '#F7F4F0', border: '1px solid rgba(0,0,0,0.05)' }}
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <span className="font-bold text-white text-xs leading-snug flex-1">{item.title}</span>
+                        <span className="font-bold text-xs leading-snug flex-1" style={{ color: '#111111' }}>{item.title}</span>
                         <span className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold ${
                           item.color === 'rose'
-                            ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                            ? ''
                             : item.color === 'amber'
-                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                            : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
-                        }`}>
+                            ? ''
+                            : ''
+                        }`} style={{
+                          background: item.color === 'rose' ? 'rgba(192,57,43,0.06)' : item.color === 'amber' ? 'rgba(192,138,32,0.06)' : 'rgba(91,94,166,0.06)',
+                          color: item.color === 'rose' ? '#c0392b' : item.color === 'amber' ? '#c08a20' : '#5b5ea6',
+                          border: `1px solid ${item.color === 'rose' ? 'rgba(192,57,43,0.12)' : item.color === 'amber' ? 'rgba(192,138,32,0.12)' : 'rgba(91,94,166,0.12)'}`,
+                        }}>
                           {item.badge}
                         </span>
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]">
-                        <span className="text-slate-400">{item.person}</span>
-                        <span className="text-slate-600">·</span>
-                        <span className="text-slate-300 flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-slate-500" />
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]" style={{ color: '#888888' }}>
+                        <span>{item.person}</span>
+                        <span style={{ color: '#D5D0CA' }}>·</span>
+                        <span className="flex items-center gap-1" style={{ color: '#555555' }}>
+                          <Calendar className="w-3 h-3" style={{ color: '#AAAAAA' }} />
                           {item.date}
                         </span>
                         {item.amount && item.amount !== 'N/A' && (
                           <>
-                            <span className="text-slate-600">·</span>
-                            <span className="font-bold text-amber-300">{item.amount}</span>
+                            <span style={{ color: '#D5D0CA' }}>·</span>
+                            <span className="font-bold" style={{ color: '#c08a20' }}>{item.amount}</span>
                           </>
                         )}
                       </div>
@@ -386,21 +395,21 @@ Click any preset question below or ask me about policies, ownership, and dues!`,
 
               {/* Recommendation Callout */}
               {msg.recommendation && (
-                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs flex items-start gap-2">
-                  <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                  <span className="leading-snug">{msg.recommendation}</span>
+                <div className="p-3 rounded-xl flex items-start gap-2" style={{ background: 'rgba(192,138,32,0.06)', border: '1px solid rgba(192,138,32,0.12)', color: '#c08a20' }}>
+                  <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: '#c08a20' }} />
+                  <span className="text-xs leading-snug">{msg.recommendation}</span>
                 </div>
               )}
 
               <div className={`text-[10px] pt-1 text-right ${
-                msg.sender === 'user' ? 'text-slate-900/70' : 'text-slate-400'
-              }`}>
+                msg.sender === 'user' ? '' : ''
+              }`} style={{ color: msg.sender === 'user' ? 'rgba(255,255,255,0.6)' : '#AAAAAA' }}>
                 {msg.timestamp}
               </div>
             </div>
 
             {msg.sender === 'user' && (
-              <div className="w-8 h-8 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 shrink-0 mt-1">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-1" style={{ background: '#F0EDE8', border: '1px solid rgba(0,0,0,0.05)', color: '#555555' }}>
                 <User className="w-4 h-4" />
               </div>
             )}
@@ -410,13 +419,13 @@ Click any preset question below or ask me about policies, ownership, and dues!`,
         {/* Typing indicator */}
         {isTyping && (
           <div className="flex gap-3 items-center">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: OLIVE_DIM, border: `1px solid ${OLIVE_BORDER}`, color: OLIVE }}>
               <Bot className="w-4 h-4" />
             </div>
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl rounded-tl-none p-3.5 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-bounce"></span>
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-bounce [animation-delay:0.2s]"></span>
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-bounce [animation-delay:0.4s]"></span>
+            <div className="rounded-2xl rounded-tl-none p-3.5 flex items-center gap-1.5" style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.06)' }}>
+              <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: OLIVE }}></span>
+              <span className="w-2 h-2 rounded-full animate-bounce [animation-delay:0.2s]" style={{ background: OLIVE }}></span>
+              <span className="w-2 h-2 rounded-full animate-bounce [animation-delay:0.4s]" style={{ background: OLIVE }}></span>
             </div>
           </div>
         )}
@@ -431,12 +440,12 @@ Click any preset question below or ask me about policies, ownership, and dues!`,
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           placeholder="Ask about policies, dues, owners… (e.g. 'What is due next month?')"
-          className="flex-1 bg-slate-900/80 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 transition-all shadow-inner"
+          className="k-input flex-1"
         />
         <button
           type="submit"
           disabled={!inputText.trim()}
-          className="px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold text-sm shadow-md shadow-amber-500/20 hover:brightness-110 active:scale-95 disabled:opacity-40 disabled:hover:brightness-100 disabled:cursor-not-allowed transition-all flex items-center gap-2 focus-ring"
+          className="k-btn-primary px-4 py-3 flex items-center gap-2"
         >
           <Send className="w-4 h-4 stroke-[2.5]" />
         </button>

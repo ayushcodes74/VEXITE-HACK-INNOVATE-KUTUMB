@@ -3,34 +3,27 @@ import {
   Upload, 
   FileText, 
   Search, 
-  Filter, 
-  CheckCircle2, 
-  AlertTriangle, 
-  Clock, 
-  Download, 
   Eye, 
   X, 
   Sparkles,
-  ArrowRight,
   ArrowDown,
-  ShieldCheck,
   UserCheck,
   Calendar,
-  CreditCard,
-  AlertCircle,
   FileCheck2,
   Cpu,
   Layers,
-  RefreshCw,
   FolderOpen,
   Info,
   ShieldAlert,
-  Trash2,
-  Check
+  Trash2
 } from 'lucide-react';
 import { useFamilyKnowledge } from '../context/FamilyContext';
 import { analyzeDocument, analyzeDemoDocument, checkBackendHealth } from '../services/api';
 import Badge from '../components/Badge';
+
+const OLIVE = '#5a7a4a';
+const OLIVE_DIM = 'rgba(90,122,74,0.08)';
+const OLIVE_BORDER = 'rgba(90,122,74,0.18)';
 
 export default function DocumentsPage() {
   const { 
@@ -205,28 +198,24 @@ export default function DocumentsPage() {
   });
 
   return (
-    <div className="space-y-8 pb-14">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-400 mb-1">
-            <FolderOpen className="w-4 h-4" />
-            <span>Document Intelligence Vault</span>
+    <div className="space-y-8 pb-16 animate-fadeIn">
+      {/* ── PAGE HEADER ────────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+        <div className="space-y-1.5">
+          <div className="section-label">
+            <FolderOpen className="w-3 h-3" />
+            <span>Documents</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-            <span>Family Documents Vault</span>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-[11px] font-bold text-amber-300">
-              <Sparkles className="w-3 h-3 text-amber-400" />
-              Powered by Gemini
-            </span>
+          <h1 className="heading-lg mt-2">
+            Give KUTUMB the documents.<br />
+            <span style={{ color: OLIVE }}>We'll build the context.</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Analyze family policies, deeds, and bills. Multiple documents combine into your central Family Knowledge & Responsibility Map.
+          <p className="text-sm max-w-xl leading-relaxed mt-1" style={{ color: '#888888' }}>
+            Upload family policies, utility bills, and loan statements. Multiple documents combine into a shared family knowledge map.
           </p>
         </div>
 
-        {/* Engine status indicator & Clear button */}
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="flex items-center gap-2 self-start shrink-0">
           {analyzedDocuments.length > 0 && (
             <button
               onClick={() => {
@@ -235,245 +224,225 @@ export default function DocumentsPage() {
                   setCurrentAnalysis(null);
                 }
               }}
-              className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-rose-400 text-xs font-medium transition-colors flex items-center gap-1.5"
-              title="Clear vault to test empty state"
+              className="px-3 py-1.5 rounded-xl text-xs font-medium transition-colors flex items-center gap-1.5 focus-ring"
+              style={{ color: '#888888', background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.06)' }}
             >
               <Trash2 className="w-3.5 h-3.5" />
               <span>Reset Vault</span>
             </button>
           )}
 
-          <div className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-full ${
-              serverHealth.isApiKeyConfigured ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
-            }`}></span>
-            <span className="text-slate-300 font-medium">
-              {serverHealth.isApiKeyConfigured ? `Gemini API Active (${serverHealth.geminiModel || 'gemini-3.6-flash'})` : 'Gemini Key Missing'}
+          <div className="px-3 py-1.5 rounded-xl text-[11px] flex items-center gap-2" style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.06)' }}>
+            <span className={`w-1.5 h-1.5 rounded-full ${serverHealth.isApiKeyConfigured ? 'animate-pulse' : ''}`} style={{ background: serverHealth.isApiKeyConfigured ? '#27ae60' : '#c08a20' }} />
+            <span className="font-medium" style={{ color: '#888888' }}>
+              {serverHealth.isApiKeyConfigured ? `Gemini ${serverHealth.geminiModel || ''}` : 'Gemini Key Missing'}
             </span>
           </div>
         </div>
       </div>
 
-      {/* 1-CLICK SYNTHETIC DEMO DOCUMENTS STRIP */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900/90 to-slate-800/60 border border-slate-800 space-y-2.5">
+      {/* ── 1-CLICK DEMO DOCUMENTS ──────────────────────────────────── */}
+      <div className="p-5 rounded-2xl space-y-3" style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.06)' }}>
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            1-Click Demo Documents (Analyze & Add to Family Map):
+          <span className="text-xs font-bold flex items-center gap-1.5" style={{ color: '#333333' }}>
+            <Sparkles className="w-3.5 h-3.5" style={{ color: OLIVE }} />
+            1-Click Demo Documents
           </span>
-          <span className="text-[11px] text-slate-400">Click any document to analyze</span>
+          <span className="text-[10px]" style={{ color: '#AAAAAA' }}>Click any to analyze with Gemini</span>
         </div>
-
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {demoFiles.map((item) => (
             <button
               key={item.id}
               onClick={() => handleAnalyzeDemo(item.id)}
               disabled={isAnalyzing}
-              className="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-amber-300 border border-slate-700/70 hover:border-amber-500/40 text-xs font-medium transition-all flex items-center gap-2 group cursor-pointer disabled:opacity-50"
+              className="px-3 py-2.5 rounded-xl border transition-all flex items-center gap-2.5 group cursor-pointer disabled:opacity-40 text-left focus-ring"
+              style={{ background: '#FAFAF8', borderColor: 'rgba(0,0,0,0.06)', color: '#555555' }}
             >
-              <FileText className="w-3.5 h-3.5 text-slate-400 group-hover:text-amber-400" />
-              <span>{item.label}</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">
-                {item.tag}
-              </span>
+              <FileText className="w-3.5 h-3.5 shrink-0 group-hover:text-[#5a7a4a] transition-colors" style={{ color: '#AAAAAA' }} />
+              <div className="min-w-0">
+                <div className="text-xs font-semibold truncate">{item.label}</div>
+                <div className="text-[10px] truncate" style={{ color: '#AAAAAA' }}>{item.tag}</div>
+              </div>
             </button>
           ))}
         </div>
       </div>
 
-      {/* UPLOAD & ANALYZE SECTION */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        {/* Dropzone Box */}
-        <div className="lg:col-span-12">
-          <div
-            onDragOver={onDragOver}
-            onDragLeave={onDragLeave}
-            onDrop={onDrop}
-            className={`relative border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center transition-all ${
-              isDragging
-                ? 'border-amber-400 bg-amber-500/10 scale-[1.01]'
-                : selectedFile
-                ? 'border-emerald-500/50 bg-emerald-500/5'
-                : 'border-slate-800 hover:border-slate-700 bg-slate-900/40'
-            }`}
-          >
-            <input
-              type="file"
-              id="doc-file-input"
-              className="hidden"
-              accept=".pdf,.png,.jpg,.jpeg,.webp,.txt"
-              onChange={(e) => e.target.files && handleFileSelect(e.target.files[0])}
-            />
+      {/* ── UPLOAD ZONE ─────────────────────────────────────────────── */}
+      <div
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+        onDrop={onDrop}
+        className={`relative rounded-2xl transition-all ${isDragging ? 'scale-[1.01]' : ''}`}
+        style={{
+          border: isDragging
+            ? `2px dashed ${OLIVE}`
+            : selectedFile
+            ? '2px dashed rgba(39,174,96,0.4)'
+            : '2px dashed rgba(0,0,0,0.10)',
+          background: isDragging
+            ? OLIVE_DIM
+            : selectedFile
+            ? 'rgba(39,174,96,0.03)'
+            : '#FFFFFF'
+        }}
+      >
+        <input
+          type="file"
+          id="doc-file-input"
+          className="hidden"
+          accept=".pdf,.png,.jpg,.jpeg,.webp,.txt"
+          onChange={(e) => e.target.files && handleFileSelect(e.target.files[0])}
+        />
 
-            {!selectedFile ? (
-              <label
-                htmlFor="doc-file-input"
-                className="flex flex-col items-center justify-center cursor-pointer space-y-3"
-              >
-                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shadow-md">
-                  <Upload className="w-6 h-6 stroke-[2]" />
-                </div>
-
-                <div>
-                  <p className="text-sm font-bold text-white">
-                    <span className="text-amber-400 hover:underline">Select document</span> or drag & drop here
-                  </p>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Multimodal support: PDF, PNG, JPG/JPEG (Max 25MB). Upload any real document or test file.
-                  </p>
-                </div>
-              </label>
-            ) : (
-              /* Selected file state with Analyze button */
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-2xl mx-auto p-4 rounded-xl bg-slate-900/90 border border-slate-800">
-                <div className="flex items-center gap-3 text-left">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                    <FileCheck2 className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-white">{selectedFile.name}</h4>
-                    <p className="text-xs text-slate-400">
-                      {(selectedFile.size / 1024).toFixed(1)} KB • Ready for Gemini Analysis
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      setSelectedFile(null);
-                      setCurrentAnalysis(null);
-                    }}
-                    disabled={isAnalyzing}
-                    className="p-2 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-
-                  <button
-                    onClick={handleAnalyzeWithGemini}
-                    disabled={isAnalyzing}
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/25 hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all flex items-center gap-2 cursor-pointer"
-                  >
-                    <Sparkles className="w-4 h-4 stroke-[2.5]" />
-                    <span>Analyze with Gemini</span>
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Loading / Progress Indicator */}
-        {isAnalyzing && (
-          <div className="lg:col-span-12 p-6 rounded-2xl bg-gradient-to-r from-amber-500/10 via-slate-900 to-slate-900 border border-amber-500/30 text-center space-y-3 animate-pulse">
-            <div className="flex items-center justify-center gap-2 text-amber-400 font-bold text-sm">
-              <Cpu className="w-5 h-5 animate-spin" />
-              <span>{analysisStage}</span>
+        {!selectedFile ? (
+          <label htmlFor="doc-file-input" className="flex flex-col items-center justify-center cursor-pointer py-12 px-6 space-y-4">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: OLIVE_DIM, border: `1px solid ${OLIVE_BORDER}` }}>
+              <Upload className="w-7 h-7 stroke-[1.5]" style={{ color: OLIVE }} />
             </div>
-            <div className="flex items-center justify-center gap-3 text-xs text-slate-400">
-              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Uploading bytes</span>
-              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Gemini Multimodal API</span>
-              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Cross-Document Aggregation</span>
+            <div className="text-center space-y-1.5">
+              <p className="text-base font-bold">
+                <span style={{ color: OLIVE }}>Select document</span> or drag &amp; drop
+              </p>
+              <div className="flex items-center justify-center gap-3 text-xs" style={{ color: '#AAAAAA' }}>
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded" style={{ background: '#F7F4F0', border: '1px solid rgba(0,0,0,0.04)' }}>PDF</span>
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded" style={{ background: '#F7F4F0', border: '1px solid rgba(0,0,0,0.04)' }}>JPG</span>
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded" style={{ background: '#F7F4F0', border: '1px solid rgba(0,0,0,0.04)' }}>PNG</span>
+                <span style={{ color: '#D5D0CA' }}>· Max 25MB</span>
+              </div>
+            </div>
+          </label>
+        ) : (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5">
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(39,174,96,0.06)', border: '1px solid rgba(39,174,96,0.15)' }}>
+                <FileCheck2 className="w-5 h-5" style={{ color: '#27ae60' }} />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold" style={{ color: '#111111' }}>{selectedFile.name}</h4>
+                <p className="text-xs" style={{ color: '#888888' }}>{(selectedFile.size / 1024).toFixed(1)} KB · Ready for analysis</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => { setSelectedFile(null); setCurrentAnalysis(null); }}
+                disabled={isAnalyzing}
+                className="p-2 rounded-xl transition-colors"
+                style={{ color: '#888888' }}
+              >
+                <X className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleAnalyzeWithGemini}
+                disabled={isAnalyzing}
+                className="k-btn-primary px-5 py-2.5 flex items-center gap-2"
+              >
+                <Sparkles className="w-4 h-4" strokeWidth={2.5} />
+                <span>Analyze with Gemini</span>
+              </button>
             </div>
           </div>
         )}
+      </div>
 
-        {/* Error Feedback */}
-        {analysisError && (
-          <div className="lg:col-span-12 p-5 rounded-2xl bg-rose-500/15 border border-rose-500/40 text-rose-300 space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 font-bold text-sm text-rose-200">
-                <ShieldAlert className="w-5 h-5 text-rose-400 shrink-0" />
-                <span>Document Analysis Failed</span>
+      {/* ── ANALYSIS LOADING STATE ──────────────────────────────────── */}
+      {isAnalyzing && (
+        <div className="p-6 rounded-2xl space-y-4" style={{ background: OLIVE_DIM, border: `1px solid ${OLIVE_BORDER}` }}>
+          <div className="flex items-center gap-2.5 font-bold text-sm" style={{ color: OLIVE }}>
+            <Cpu className="w-4 h-4 animate-spin" />
+            <span>{analysisStage}</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-[10px]" style={{ color: '#888888' }}>
+            {['Understanding your document…','Finding people…','Connecting relationships…','Detecting important dates…','Extracting responsibilities…','Building knowledge model…'].map((s, i) => (
+              <div key={i} className="flex items-center gap-1.5 px-2 py-1 rounded-lg" style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.04)' }}>
+                <span className="w-1 h-1 rounded-full" style={{ background: '#27ae60' }} />
+                {s}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── ERROR STATE ─────────────────────────────────────────────── */}
+      {analysisError && (
+        <div className="p-5 rounded-2xl space-y-2" style={{ background: 'rgba(192,57,43,0.04)', border: '1px solid rgba(192,57,43,0.12)' }}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 font-bold text-sm" style={{ color: '#c0392b' }}>
+              <ShieldAlert className="w-4 h-4 shrink-0" style={{ color: '#c0392b' }} />
+              <span>Document Analysis Failed</span>
+            </div>
+            <button onClick={() => setAnalysisError(null)} style={{ color: '#c0392b' }} className="p-1">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <p className="text-xs leading-relaxed" style={{ color: 'rgba(192,57,43,0.8)' }}>{analysisError}</p>
+        </div>
+      )}
+
+      {/* ── ANALYSIS RESULT PANEL ───────────────────────────────────── */}
+      {currentAnalysis && (
+        <div className="rounded-2xl overflow-hidden animate-slideUp" style={{ border: `1px solid ${OLIVE_BORDER}`, background: '#FFFFFF' }}>
+          {/* Top accent bar */}
+          <div className="h-0.5 w-full" style={{ background: `linear-gradient(90deg, #5a7a4a, #4a6a3a, rgba(90,122,74,0.2))` }} />
+
+          <div className="p-5 sm:p-7 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4" style={{ borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '1.25rem' }}>
+              <div>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="label-xs px-2 py-0.5 rounded" style={{ background: OLIVE_DIM, color: OLIVE, border: `1px solid ${OLIVE_BORDER}` }}>
+                    {currentAnalysis.document?.type || 'Analyzed Document'}
+                  </span>
+                  {currentAnalysis.relevance?.is_relevant === false ? (
+                    <span className="label-xs px-2 py-0.5 rounded" style={{ background: 'rgba(192,138,32,0.06)', color: '#c08a20', border: '1px solid rgba(192,138,32,0.15)' }}>Not Relevant</span>
+                  ) : (
+                    <span className="label-xs px-2 py-0.5 rounded" style={{ background: 'rgba(39,174,96,0.06)', color: '#27ae60', border: '1px solid rgba(39,174,96,0.15)' }}>Document Understood</span>
+                  )}
+                </div>
+                <h2 className="text-xl sm:text-2xl font-extrabold mt-0.5" style={{ color: '#111111' }}>
+                  {currentAnalysis.document?.title}
+                </h2>
+                <div className="flex items-center gap-3 text-xs mt-1" style={{ color: '#AAAAAA' }}>
+                  <span>Source: <strong className="font-mono" style={{ color: '#888888' }}>{currentAnalysis.document?.source_file}</strong></span>
+                  <span style={{ color: '#D5D0CA' }}>·</span>
+                  <span className="font-semibold" style={{ color: OLIVE }}>{(currentAnalysis.confidence * 100).toFixed(0)}% Confidence</span>
+                </div>
               </div>
               <button
-                onClick={() => setAnalysisError(null)}
-                className="text-rose-400 hover:text-white p-1"
+                onClick={() => setCurrentAnalysis(null)}
+                className="p-1.5 rounded-xl self-start sm:self-center transition-colors"
+                style={{ color: '#888888' }}
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <p className="text-xs text-rose-300/90 leading-relaxed">
-              {analysisError}
-            </p>
-          </div>
-        )}
-
-      </div>
-
-      {/* GEMINI ANALYSIS RESULT PANEL */}
-      {currentAnalysis && (
-        <div className="p-6 sm:p-8 rounded-2xl bg-slate-900/80 border border-amber-500/40 shadow-2xl space-y-6 relative overflow-hidden">
-          <div className="absolute top-0 right-0 px-4 py-1.5 rounded-bl-2xl bg-gradient-to-l from-amber-500/20 to-transparent border-l border-b border-amber-500/30 text-[11px] font-bold text-amber-300 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            LATEST ANALYSIS RESULT
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-amber-400">
-                  {currentAnalysis.document?.type || 'Analyzed Document'}
-                </span>
-                {currentAnalysis.relevance?.is_relevant === false ? (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-amber-300 border border-amber-500/30">
-                    Not Relevant
-                  </span>
-                ) : (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                    Added to Family Map
-                  </span>
-                )}
-              </div>
-              <h2 className="text-xl sm:text-2xl font-extrabold text-white mt-0.5">
-                {currentAnalysis.document?.title}
-              </h2>
-              <div className="flex items-center gap-3 text-xs text-slate-400 mt-1">
-                <span>Source File: <strong className="text-slate-200 font-mono">{currentAnalysis.document?.source_file}</strong></span>
-                <span>•</span>
-                <span className="text-emerald-400 font-semibold">
-                  {(currentAnalysis.confidence * 100).toFixed(0)}% Confidence
-                </span>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setCurrentAnalysis(null)}
-              className="p-1.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 self-start sm:self-center"
-              title="Dismiss panel"
-            >
-              <X className="w-4 h-4" />
-            </button>
           </div>
 
           {currentAnalysis.relevance?.is_relevant === false ? (
-            <div className="p-5 rounded-xl bg-slate-950/70 border border-amber-500/30 space-y-3">
-              <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
-                <Info className="w-4 h-4 text-amber-400 shrink-0" />
+            <div className="p-5 rounded-xl space-y-3" style={{ background: '#F7F4F0', border: '1px solid rgba(192,138,32,0.15)' }}>
+              <div className="flex items-center gap-2 font-bold text-sm" style={{ color: '#c08a20' }}>
+                <Info className="w-4 h-4 shrink-0" style={{ color: '#c08a20' }} />
                 <span>Document not relevant to KUTUMB family responsibility context.</span>
               </div>
-              <p className="text-xs text-slate-300 leading-relaxed bg-slate-900/60 p-3 rounded-lg border border-slate-800">
+              <p className="text-xs leading-relaxed p-3 rounded-lg" style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.05)', color: '#555555' }}>
                 <strong>Gemini Assessment:</strong> {currentAnalysis.relevance?.reason}
               </p>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px]" style={{ color: '#888888' }}>
                 Because this document does not contain family-relevant obligations, 0 responsibilities were added to the family map.
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="space-y-3 p-4 rounded-xl bg-slate-950/60 border border-slate-800/80">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <UserCheck className="w-4 h-4 text-amber-400" />
+              <div className="space-y-3 p-4 rounded-xl" style={{ background: '#F7F4F0', border: '1px solid rgba(0,0,0,0.05)' }}>
+                <h3 className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5" style={{ color: '#888888' }}>
+                  <UserCheck className="w-4 h-4" style={{ color: '#c08a20' }} />
                   People Mentioned ({currentAnalysis.people?.length || 0})
                 </h3>
                 <div className="space-y-2">
                   {currentAnalysis.people?.map((person, idx) => (
-                    <div key={idx} className="flex items-center justify-between text-xs p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                      <span className="font-semibold text-slate-100">{person.name}</span>
-                      <span className="text-[11px] text-amber-300 font-medium px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
+                    <div key={idx} className="flex items-center justify-between text-xs p-2 rounded-lg" style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.05)' }}>
+                      <span className="font-semibold" style={{ color: '#111111' }}>{person.name}</span>
+                      <span className="text-[11px] font-medium px-2 py-0.5 rounded" style={{ background: 'rgba(192,138,32,0.06)', color: '#c08a20', border: '1px solid rgba(192,138,32,0.12)' }}>
                         {person.role}
                       </span>
                     </div>
@@ -481,46 +450,46 @@ export default function DocumentsPage() {
                 </div>
               </div>
 
-              <div className="space-y-3 p-4 rounded-xl bg-slate-950/60 border border-slate-800/80">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <Layers className="w-4 h-4 text-blue-400" />
+              <div className="space-y-3 p-4 rounded-xl" style={{ background: '#F7F4F0', border: '1px solid rgba(0,0,0,0.05)' }}>
+                <h3 className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5" style={{ color: '#888888' }}>
+                  <Layers className="w-4 h-4" style={{ color: '#2980b9' }} />
                   Relationships ({currentAnalysis.relationships?.length || 0})
                 </h3>
                 <div className="space-y-2">
                   {currentAnalysis.relationships?.map((rel, idx) => (
-                    <div key={idx} className="p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-xs space-y-0.5">
-                      <div className="font-semibold text-slate-200">{rel.from}</div>
-                      <div className="text-[11px] text-amber-400 flex items-center gap-1 pl-2">
-                        <ArrowDown className="w-3 h-3 text-amber-400" />
+                    <div key={idx} className="p-2 rounded-lg text-xs space-y-0.5" style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.05)' }}>
+                      <div className="font-semibold" style={{ color: '#333333' }}>{rel.from}</div>
+                      <div className="text-[11px] flex items-center gap-1 pl-2" style={{ color: '#c08a20' }}>
+                        <ArrowDown className="w-3 h-3" style={{ color: '#c08a20' }} />
                         <span>{rel.relationship}</span>
                       </div>
-                      <div className="font-medium text-slate-400 pl-4">{rel.to}</div>
+                      <div className="font-medium pl-4" style={{ color: '#888888' }}>{rel.to}</div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="space-y-3 p-4 rounded-xl bg-slate-950/60 border border-slate-800/80">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <Calendar className="w-4 h-4 text-emerald-400" />
+              <div className="space-y-3 p-4 rounded-xl" style={{ background: '#F7F4F0', border: '1px solid rgba(0,0,0,0.05)' }}>
+                <h3 className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5" style={{ color: '#888888' }}>
+                  <Calendar className="w-4 h-4" style={{ color: '#27ae60' }} />
                   Key Dates & Responsibilities
                 </h3>
                 {currentAnalysis.financial?.amount !== null && (
-                  <div className="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 flex items-center justify-between text-xs">
-                    <span className="text-slate-400">Amount:</span>
-                    <span className="font-bold text-amber-300">
+                  <div className="p-2.5 rounded-lg flex items-center justify-between text-xs" style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.05)' }}>
+                    <span style={{ color: '#888888' }}>Amount:</span>
+                    <span className="font-bold" style={{ color: '#c08a20' }}>
                       ₹{Number(currentAnalysis.financial?.amount).toLocaleString('en-IN')} {currentAnalysis.financial?.currency}
                     </span>
                   </div>
                 )}
                 <div className="space-y-2">
                   {currentAnalysis.responsibilities?.map((resp, idx) => (
-                    <div key={idx} className="p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-xs space-y-1">
-                      <div className="flex justify-between font-semibold text-white">
-                        <span>{resp.person}</span>
-                        <span className="text-amber-300">{resp.due_date}</span>
+                    <div key={idx} className="p-2 rounded-lg text-xs space-y-1" style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.05)' }}>
+                      <div className="flex justify-between font-semibold">
+                        <span style={{ color: '#111111' }}>{resp.person}</span>
+                        <span style={{ color: '#c08a20' }}>{resp.due_date}</span>
                       </div>
-                      <p className="text-[11px] text-slate-300">{resp.action}</p>
+                      <p className="text-[11px]" style={{ color: '#555555' }}>{resp.action}</p>
                     </div>
                   ))}
                 </div>
@@ -531,29 +500,29 @@ export default function DocumentsPage() {
       )}
 
       {/* ALL ANALYZED DOCUMENTS LIST & VAULT */}
-      <div className="space-y-4 pt-4 border-t border-slate-800/80">
+      <div className="space-y-4 pt-4" style={{ borderTop: '1px solid rgba(0,0,0,0.06)' }}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <h2 className="text-lg font-bold flex items-center gap-2" style={{ color: '#111111' }}>
               <span>Analyzed Family Paperwork</span>
-              <span className="px-2 py-0.5 text-xs rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+              <span className="px-2 py-0.5 text-xs rounded-full" style={{ background: '#F0EDE8', color: '#555555', border: '1px solid rgba(0,0,0,0.05)' }}>
                 {analyzedDocuments.length} Documents in State
               </span>
             </h2>
-            <p className="text-xs text-slate-400">Documents contributing to the live Sharma Family Knowledge & Responsibility Map</p>
+            <p className="text-xs" style={{ color: '#888888' }}>Documents contributing to the live Sharma Family Knowledge & Responsibility Map</p>
           </div>
         </div>
 
         {/* Filter Controls */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: '#AAAAAA' }} />
             <input
               type="text"
               placeholder="Search by document title, source file, or type..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-900/60 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50"
+              className="k-input w-full pl-10"
             />
           </div>
 
@@ -564,9 +533,14 @@ export default function DocumentsPage() {
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
                   selectedCategory === cat
-                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                    : 'bg-slate-900/60 text-slate-400 border border-slate-800/80 hover:text-slate-200'
+                    ? ''
+                    : ''
                 }`}
+                style={{
+                  background: selectedCategory === cat ? OLIVE_DIM : '#F7F4F0',
+                  color: selectedCategory === cat ? OLIVE : '#888888',
+                  border: `1px solid ${selectedCategory === cat ? OLIVE_BORDER : 'rgba(0,0,0,0.05)'}`,
+                }}
               >
                 {cat}
               </button>
@@ -576,10 +550,10 @@ export default function DocumentsPage() {
 
         {/* Document Cards Grid */}
         {filteredDocuments.length === 0 ? (
-          <div className="p-10 text-center rounded-2xl bg-slate-900/40 border border-slate-800 space-y-3">
-            <FileText className="w-8 h-8 text-slate-500 mx-auto" />
-            <h3 className="text-sm font-bold text-white">No analyzed documents in vault</h3>
-            <p className="text-xs text-slate-400 max-w-md mx-auto">
+          <div className="p-10 text-center rounded-2xl space-y-3" style={{ background: '#F7F4F0', border: '1px dashed rgba(0,0,0,0.08)' }}>
+            <FileText className="w-8 h-8 mx-auto" style={{ color: '#AAAAAA' }} />
+            <h3 className="text-sm font-bold" style={{ color: '#111111' }}>No analyzed documents in vault</h3>
+            <p className="text-xs max-w-md mx-auto" style={{ color: '#888888' }}>
               Upload a document above or click any of the 1-Click Demo buttons to populate the family knowledge map.
             </p>
           </div>
@@ -598,12 +572,12 @@ export default function DocumentsPage() {
               return (
                 <div
                   key={item.id}
-                  className="glass-card rounded-2xl p-5 flex flex-col justify-between space-y-4"
+                  className="glass-card p-5 flex flex-col justify-between space-y-4"
                 >
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-amber-400">
-                        <FileText className="w-5 h-5" />
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: '#F0EDE8', border: '1px solid rgba(0,0,0,0.05)' }}>
+                        <FileText className="w-5 h-5" style={{ color: '#c08a20' }} />
                       </div>
                       <Badge variant={isRelevant ? 'success' : 'default'}>
                         {isRelevant ? 'Analyzed' : 'Not Relevant'}
@@ -611,27 +585,27 @@ export default function DocumentsPage() {
                     </div>
 
                     <div>
-                      <h3 className="text-base font-bold text-white line-clamp-1">{title}</h3>
-                      <p className="text-xs text-slate-400 font-mono mt-0.5 truncate">{sourceFile}</p>
+                      <h3 className="text-base font-bold line-clamp-1" style={{ color: '#111111' }}>{title}</h3>
+                      <p className="text-xs font-mono mt-0.5 truncate" style={{ color: '#888888' }}>{sourceFile}</p>
                     </div>
 
-                    <p className="text-xs text-slate-400">
-                      Type: <strong className="text-slate-300">{type}</strong>
+                    <p className="text-xs" style={{ color: '#888888' }}>
+                      Type: <strong style={{ color: '#555555' }}>{type}</strong>
                     </p>
 
                     {/* Metadata tags */}
-                    <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1 text-xs">
-                      <div className="flex justify-between text-slate-300">
-                        <span className="text-slate-400 text-[11px]">People detected:</span>
+                    <div className="p-3 rounded-xl space-y-1 text-xs" style={{ background: '#F7F4F0', border: '1px solid rgba(0,0,0,0.04)' }}>
+                      <div className="flex justify-between" style={{ color: '#555555' }}>
+                        <span style={{ color: '#888888', fontSize: '11px' }}>People detected:</span>
                         <span className="font-semibold">{peopleCount}</span>
                       </div>
-                      <div className="flex justify-between text-slate-300">
-                        <span className="text-slate-400 text-[11px]">Relationships:</span>
+                      <div className="flex justify-between" style={{ color: '#555555' }}>
+                        <span style={{ color: '#888888', fontSize: '11px' }}>Relationships:</span>
                         <span className="font-semibold">{relsCount}</span>
                       </div>
-                      <div className="flex justify-between text-slate-300">
-                        <span className="text-slate-400 text-[11px]">Responsibilities:</span>
-                        <span className={`font-semibold ${respCount > 0 ? 'text-amber-300' : 'text-slate-400'}`}>
+                      <div className="flex justify-between" style={{ color: '#555555' }}>
+                        <span style={{ color: '#888888', fontSize: '11px' }}>Responsibilities:</span>
+                        <span className={`font-semibold ${respCount > 0 ? '' : ''}`} style={{ color: respCount > 0 ? '#c08a20' : '#888888' }}>
                           {respCount}
                         </span>
                       </div>
@@ -639,12 +613,13 @@ export default function DocumentsPage() {
                   </div>
 
                   {/* Actions: Inspect & Remove */}
-                  <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                  <div className="pt-3 flex items-center justify-between gap-2" style={{ borderTop: '1px solid rgba(0,0,0,0.05)' }}>
                     <button
                       onClick={() => setSelectedDocModal(item)}
-                      className="flex-1 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                      className="flex-1 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                      style={{ background: '#F0EDE8', color: '#555555' }}
                     >
-                      <Eye className="w-3.5 h-3.5 text-slate-400" />
+                      <Eye className="w-3.5 h-3.5" style={{ color: '#888888' }} />
                       <span>Inspect</span>
                     </button>
 
@@ -655,7 +630,8 @@ export default function DocumentsPage() {
                           setCurrentAnalysis(null);
                         }
                       }}
-                      className="p-1.5 rounded-xl bg-slate-800/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 border border-slate-800 hover:border-rose-500/40 transition-colors"
+                      className="p-1.5 rounded-xl transition-colors"
+                      style={{ background: '#F7F4F0', color: '#AAAAAA', border: '1px solid rgba(0,0,0,0.04)' }}
                       title="Remove from family map"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -670,57 +646,58 @@ export default function DocumentsPage() {
 
       {/* Document Detail Modal */}
       {selectedDocModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 space-y-5 shadow-2xl animate-fadeIn">
-            <div className="flex items-start justify-between gap-4 border-b border-slate-800 pb-4">
+        <div className="fixed inset-0 backdrop-blur-md z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.3)' }}>
+          <div className="rounded-2xl max-w-xl w-full p-6 space-y-5 animate-fadeIn" style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 24px 64px -16px rgba(0,0,0,0.2)' }}>
+            <div className="flex items-start justify-between gap-4 pb-4" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
               <div>
-                <h3 className="font-bold text-lg text-white">
+                <h3 className="font-bold text-lg" style={{ color: '#111111' }}>
                   {selectedDocModal.analysis?.document?.title || selectedDocModal.originalFileName}
                 </h3>
-                <p className="text-xs text-slate-400 font-mono">
+                <p className="text-xs font-mono" style={{ color: '#888888' }}>
                   {selectedDocModal.analysis?.document?.source_file || selectedDocModal.originalFileName}
                 </p>
               </div>
               <button
                 onClick={() => setSelectedDocModal(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+                className="p-1 rounded-lg transition-colors"
+                style={{ color: '#888888' }}
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-3 text-xs sm:text-sm bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+            <div className="space-y-3 text-xs sm:text-sm p-4 rounded-xl" style={{ background: '#F7F4F0', border: '1px solid rgba(0,0,0,0.04)' }}>
               <div className="flex justify-between">
-                <span className="text-slate-400">Relevance:</span>
+                <span style={{ color: '#888888' }}>Relevance:</span>
                 <Badge variant={selectedDocModal.analysis?.relevance?.is_relevant !== false ? 'success' : 'default'}>
                   {selectedDocModal.analysis?.relevance?.is_relevant !== false ? 'Family Relevant' : 'Not Relevant'}
                 </Badge>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Type:</span>
-                <span className="font-semibold text-slate-200">{selectedDocModal.analysis?.document?.type || 'Document'}</span>
+                <span style={{ color: '#888888' }}>Type:</span>
+                <span className="font-semibold" style={{ color: '#333333' }}>{selectedDocModal.analysis?.document?.type || 'Document'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">People:</span>
-                <span className="font-semibold text-slate-200">
+                <span style={{ color: '#888888' }}>People:</span>
+                <span className="font-semibold" style={{ color: '#333333' }}>
                   {selectedDocModal.analysis?.people?.map(p => `${p.name} (${p.role})`).join(', ') || 'None'}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Dates:</span>
-                <span className="font-semibold text-amber-300">
+                <span style={{ color: '#888888' }}>Dates:</span>
+                <span className="font-semibold" style={{ color: '#c08a20' }}>
                   {selectedDocModal.analysis?.dates?.map(d => `${d.type}: ${d.date}`).join(', ') || 'None'}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Responsibilities:</span>
-                <span className="font-semibold text-white">
+                <span style={{ color: '#888888' }}>Responsibilities:</span>
+                <span className="font-semibold" style={{ color: '#111111' }}>
                   {selectedDocModal.analysis?.responsibilities?.length || 0}
                 </span>
               </div>
               {selectedDocModal.analysis?.relevance?.reason && (
-                <div className="pt-2 border-t border-slate-800 text-xs text-slate-400">
-                  <span className="font-bold text-slate-300 block mb-1">Reason:</span>
+                <div className="pt-2 text-xs" style={{ color: '#888888', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+                  <span className="font-bold block mb-1" style={{ color: '#555555' }}>Reason:</span>
                   <p>{selectedDocModal.analysis.relevance.reason}</p>
                 </div>
               )}
@@ -729,7 +706,7 @@ export default function DocumentsPage() {
             <div className="pt-2 flex justify-end">
               <button
                 onClick={() => setSelectedDocModal(null)}
-                className="px-4 py-2 rounded-xl bg-slate-800 text-slate-200 text-xs font-semibold"
+                className="k-btn-secondary px-4 py-2"
               >
                 Close
               </button>

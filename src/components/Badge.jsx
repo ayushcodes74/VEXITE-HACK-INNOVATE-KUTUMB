@@ -8,15 +8,15 @@ export default function Badge({ children, variant = 'default', size = 'md', clas
   };
 
   const variantClasses = {
-    high: 'bg-rose-500/15 text-rose-400 border border-rose-500/30 shadow-[0_0_12px_rgba(244,63,94,0.15)]',
-    medium: 'bg-amber-500/15 text-amber-300 border border-amber-500/30 shadow-[0_0_12px_rgba(245,158,11,0.15)]',
-    low: 'bg-blue-500/15 text-blue-300 border border-blue-500/30',
-    success: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30',
-    completed: 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30',
-    warning: 'bg-amber-500/15 text-amber-400 border border-amber-500/30',
-    info: 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30',
-    default: 'bg-slate-800 text-slate-300 border border-slate-700/60',
-    purple: 'bg-purple-500/15 text-purple-300 border border-purple-500/30',
+    high: 'bg-[rgba(192,57,43,0.06)] text-[#c0392b] border border-[rgba(192,57,43,0.15)]',
+    medium: 'bg-[rgba(192,138,32,0.06)] text-[#c08a20] border border-[rgba(192,138,32,0.15)]',
+    low: 'bg-[rgba(41,128,185,0.06)] text-[#2980b9] border border-[rgba(41,128,185,0.15)]',
+    success: 'bg-[rgba(39,174,96,0.06)] text-[#27ae60] border border-[rgba(39,174,96,0.15)]',
+    completed: 'bg-[rgba(39,174,96,0.06)] text-[#27ae60] border border-[rgba(39,174,96,0.15)]',
+    warning: 'bg-[rgba(192,138,32,0.06)] text-[#c08a20] border border-[rgba(192,138,32,0.15)]',
+    info: 'bg-[rgba(91,94,166,0.06)] text-[#5b5ea6] border border-[rgba(91,94,166,0.15)]',
+    default: 'bg-[#F0EDE8] text-[#666666] border border-[rgba(0,0,0,0.06)]',
+    purple: 'bg-[rgba(91,94,166,0.06)] text-[#5b5ea6] border border-[rgba(91,94,166,0.15)]',
   };
 
   return (
@@ -24,7 +24,7 @@ export default function Badge({ children, variant = 'default', size = 'md', clas
       className={`inline-flex items-center gap-1.5 tracking-wide transition-colors ${sizeClasses[size] || sizeClasses.md} ${variantClasses[variant] || variantClasses.default} ${className}`}
     >
       {variant === 'high' && (
-        <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>
+        <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#c0392b' }}></span>
       )}
       {children}
     </span>

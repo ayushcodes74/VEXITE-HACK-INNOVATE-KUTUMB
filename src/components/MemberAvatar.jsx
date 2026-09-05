@@ -20,17 +20,17 @@ export default function MemberAvatar({ member, size = 'md', showName = false, sh
   const getGradient = (id) => {
     switch (id) {
       case 'rajesh':
-        return 'from-amber-500 to-orange-600 shadow-orange-500/20';
+        return 'from-amber-500 to-orange-500';
       case 'sunita':
-        return 'from-rose-500 to-pink-600 shadow-pink-500/20';
+        return 'from-rose-400 to-pink-500';
       case 'aarav':
-        return 'from-blue-500 to-cyan-600 shadow-blue-500/20';
+        return 'from-blue-400 to-cyan-500';
       case 'ananya':
-        return 'from-emerald-500 to-teal-600 shadow-emerald-500/20';
+        return 'from-emerald-400 to-teal-500';
       case 'both':
-        return 'from-purple-500 to-indigo-600 shadow-indigo-500/20';
+        return 'from-indigo-400 to-purple-500';
       default:
-        return 'from-slate-600 to-slate-800 shadow-slate-700/20';
+        return 'from-gray-400 to-gray-500';
     }
   };
 
@@ -40,24 +40,24 @@ export default function MemberAvatar({ member, size = 'md', showName = false, sh
   return (
     <div className="inline-flex items-center gap-2.5">
       <div
-        className={`relative flex items-center justify-center rounded-full bg-gradient-to-tr text-white font-semibold shadow-md ring-2 ring-slate-800/80 shrink-0 ${sizeClasses[size] || sizeClasses.md} ${gradient}`}
+        className={`relative flex items-center justify-center rounded-full bg-gradient-to-tr text-white font-semibold shadow-sm ring-2 ring-white shrink-0 ${sizeClasses[size] || sizeClasses.md} ${gradient}`}
         title={`${member.name || 'Member'}${member.relation ? ` (${member.relation})` : ''}`}
       >
         <span>{initials}</span>
         {member.activeAlerts > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-slate-950 animate-pulse"></span>
+          <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-white animate-pulse" style={{ background: '#c0392b' }}></span>
         )}
       </div>
 
       {(showName || showRole) && (
         <div className="flex flex-col">
           {showName && (
-            <span className="text-sm font-medium text-slate-200 leading-tight">
+            <span className="text-sm font-medium leading-tight" style={{ color: '#1a1a1a' }}>
               {member.name}
             </span>
           )}
           {showRole && (
-            <span className="text-xs text-slate-400 leading-tight">
+            <span className="text-xs leading-tight" style={{ color: '#888888' }}>
               {member.role || member.relation}
             </span>
           )}

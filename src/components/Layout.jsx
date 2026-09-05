@@ -1,36 +1,38 @@
 import React, { useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 
 export default function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const location = useLocation();
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 flex">
-      {/* Persistent Sidebar */}
+    <div className="min-h-screen flex" style={{ background: '#FAF8F5', color: '#1a1a1a' }}>
       <Sidebar isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
-      {/* Main Content Area */}
-      <div className="flex-1 lg:pl-72 flex flex-col min-h-screen">
-        {/* Top Navbar */}
+      {/* Main content area — offset for sidebar (w-64) */}
+      <div className="flex-1 lg:pl-64 flex flex-col min-h-screen">
         <Navbar onOpenMobileMenu={() => setMobileMenuOpen(true)} />
 
-        {/* Page Content Viewport */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 lg:py-8 max-w-7xl w-full mx-auto">
           <Outlet />
         </main>
 
-        {/* Global Footer */}
-        <footer className="py-4 px-6 border-t border-slate-800/40 text-center text-xs text-slate-400">
+        <footer
+          className="py-4 px-6 text-center text-[11px]"
+          style={{ color: '#AAAAAA', borderTop: '1px solid rgba(0,0,0,0.05)' }}
+        >
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2 max-w-7xl mx-auto">
-            <p>
-              <span className="font-semibold text-slate-400">KUTUMB</span> — Family Knowledge & Responsibility Map
-            </p>
-            <p className="text-slate-400">
-              Built for hackathon • Sharma Family Hub Demo
-            </p>
+            <div className="flex items-center gap-2">
+              <span className="font-bold" style={{ color: '#555555' }}>KUTUMB</span>
+              <span style={{ color: '#CCCCCC' }}>·</span>
+              <span>Family Knowledge OS</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span>Powered by Gemini</span>
+              <span style={{ color: '#CCCCCC' }}>·</span>
+              <span>HackDays 2026</span>
+            </div>
           </div>
         </footer>
       </div>
